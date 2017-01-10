@@ -1,0 +1,4 @@
+[*.{c,cpp,cc,h,hpp,js}]
+indent_style = tab
+indent_size = 4
+trim_trailing_whitesapce = true
