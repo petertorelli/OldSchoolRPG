@@ -47,7 +47,7 @@ let Session = {
 
 /*
  * For some reason 'this' is returning the root window and not
- * RenderPrimTable object?
+ * RenderPrimTable object? ...duh... let deliberately acts this way
  */
 let RenderPrimTable = {
 	basicLine: function (x1, y1, x2, y2) {
