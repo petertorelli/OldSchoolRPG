@@ -27,14 +27,14 @@ let $canvas;
 var currentLevel = LEVEL_ONE;;
 
 // Instead of using padding can we just do a translate
-let grid = {
+const grid = {
 	i: 20,
 	j: 20,
 	w: 0,
 	h: 0,
 };
 
-let Cursor = {
+const Cursor = {
  	cell: {
  		i: undefined,
  		j: undefined,
@@ -42,7 +42,7 @@ let Cursor = {
  	edge: undefined,
 };
 
-let Session = {
+const Session = {
 	mode: undefined,
 	type: undefined,
 };
@@ -51,7 +51,7 @@ let Session = {
  * For some reason 'this' is returning the root window and not
  * RenderPrimTable object? ...duh... let deliberately acts this way
  */
-let RenderPrimTable = {
+const RenderPrimTable = {
 	basicLine: function (x1, y1, x2, y2) {
 		$ctx.save();
 		$ctx.strokeStyle = 'black';
@@ -122,13 +122,13 @@ let RenderPrimTable = {
 };
 
 // Return a reference to the (logical) cell's unique object
-let _getCellReference = (i, j, k = 1) => {
+const _getCellReference = (i, j, k = 1) => {
 	// TODO make a member function that comprehends dimensions
 	return currentLevel[i + j * (grid.i)];
 	//return level[i + j * 20];
 };
 
-let _renderEdge = (x1, y1, x2, y2, edge, edgeType) => {
+const _renderEdge = (x1, y1, x2, y2, edge, edgeType) => {
 	// TODO Might be faster to store a reference to the render function too
 	if (edgeType === undefined) {
 		return;
@@ -141,7 +141,7 @@ let _renderEdge = (x1, y1, x2, y2, edge, edgeType) => {
 	renderFunc(x1, y1, x2, y2, edge);
 };
 
-let _renderCell = function (i, j) {
+const _renderCell = (i, j) => {
 	// Translate grid coords to logical bounding box (only compute once)
 	let [ulx, uly] = [i * grid.w, j * grid.h];
 	let [lrx, lry] = [ulx + grid.w, uly + grid.h];
@@ -222,7 +222,7 @@ const Party = {
     },
 };
 
-let drawGrid = () => {
+const drawGrid = () => {
     $ctx.save();
     $ctx.beginPath();
     for (let i = 0; i <= grid.i; ++i) {
@@ -375,11 +375,13 @@ const draw3dViewPort = () => {
 	});
 	let $vp = $('canvas#viewport');
 	let $x = $vp[0].getContext('2d');
-	$x.clearRect(0, 0, $vp.width(), $vp.height());
+
 	
 	$x.save();
-	$x.strokeStyle = "black";
-	$x.lineWidth = 1;
+	$x.fillStyle = "#222";
+	$x.fillRect(0, 0, $vp.width(), $vp.height());
+	$x.strokeStyle = "lightgreen";
+	$x.lineWidth = 2;
 
 	let cell = _getCellReference(Party.loc.i, Party.loc.j);
 
@@ -452,7 +454,7 @@ const xy2ij = (x, y) => {
 	};
 };
 
-const shadeCell = (cell, color = 'grey') => {
+const shadeCell = (cell, color) => {
 	let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
 	$ctx.save();
 	$ctx.globalAlpha = 0.25;
@@ -467,15 +469,15 @@ const shadeCell = (cell, color = 'grey') => {
 const mouseMoveHandler = (mousex, mousey) => {
 	redraw();
 	// Re-translate mouse to match coord system
-	mousex += grid.w / 2;
-	mousey += grid.h / 2;
+	//mousex += grid.w ;
+	//mousey += grid.h ;
 	// Translate mouse to cell
 	let cell = xy2ij(mousex, mousey);
 	if (cell.i < 0 || cell.j < 0 || cell.i >= grid.i || cell.j >= grid.j) {
 		return;
 	}
 	// Determine the upper-left corner x,y coordinates for the cell.
-	shadeCell(cell);
+	shadeCell(cell, $('input[name=enable-edit]').prop('checked') ? 'blue' : 'grey');
 	let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
 	let edge = computeEdgeVertices(ulcx, ulcy, mousex, mousey);
 	if (Session.type === 'edge') {
@@ -483,8 +485,8 @@ const mouseMoveHandler = (mousex, mousey) => {
 		$ctx.beginPath();
 		$ctx.moveTo(edge.x1, edge.y1);
 		$ctx.lineTo(edge.x2, edge.y2);
-		$ctx.globalAlpha = 0.25;
-		$ctx.strokeStyle = 'blue';
+		$ctx.globalAlpha = .7;
+		$ctx.strokeStyle = $('input[name=enable-edit]').prop('checked') ? 'red' : 'grey';
 		$ctx.lineWidth = 5;
 		$ctx.stroke();
 		$ctx.restore();
@@ -495,7 +497,7 @@ const mouseMoveHandler = (mousex, mousey) => {
 	Cursor.edge = edge.wall;
 };
 
-let continuityChecks = () => {
+const continuityChecks = () => {
 	// #1 Make opposite cell's wall match current edge!
 	// Wall, Door, Hidden Door
 	/*    Adjacent cell sharing edge
@@ -539,8 +541,10 @@ let continuityChecks = () => {
 	}
 };
 
-let handleCanvasClick = () => {
-	console.log(Cursor.cell.i, Cursor.cell.j, Cursor.edge, Session.mode);
+const handleCanvasClick = () => {
+	if ($('input[name=enable-edit]').prop('checked') === false) {
+		return;
+	}
 	let cell = _getCellReference(Cursor.cell.i, Cursor.cell.j);
 	if (Session.type === 'edge') {
 		// If mode is what is on the edge, remove it
@@ -570,16 +574,6 @@ let handleCanvasClick = () => {
 	redraw();
 };
 
-let printJson = () => {
-	let state = JSON.stringify(Session.state);
-	console.log(state);
-};
-
-let loadJson = (state) => {
-	Session.state = JSON.parse(state);
-	redraw();
-};
-
 $(() => {
 	$canvas = $('canvas#draw-grid');
 	$ctx = $canvas[0].getContext('2d');
@@ -587,7 +581,7 @@ $(() => {
 	grid.w = $canvas.width() / (grid.i + 2);
 	grid.h = $canvas.height() / (grid.j + 2);
 	// Center the grid in the canvas so that we don't have half-lines on edges
-	$ctx.translate(grid.w / 2, grid.h / 2);
+	$ctx.translate(grid.w * 1, grid.h * 1);
 	// Draw mode select
 	$('input[name="draw-mode"]').on('click', e => {
 		Session.mode = e.target.value;
@@ -602,6 +596,9 @@ $(() => {
 	$('canvas#draw-grid').on('click', (e) => {
 		handleCanvasClick(e.offsetX, e.offsetY);
 	})
+	$('input[name=enable-edit]').on('click', e => {
+		$('input[name=draw-mode]').prop('disabled', !e.target.checked);
+	});
     // The controller... that's really it!
     $('body').keydown((e) => {
         if (e.which === 37) { // left turn
@@ -611,7 +608,7 @@ $(() => {
         } else if (e.which === 39) { // right turn
             Party.turnRight();
         } else if (e.which === 40) { // down
-        } else if (e.which === 0x42 || e.which === 0x62) {
+        } else if (e.which === 0x42 || e.which === 0x62) { // b, B
         	Party.bash();
         }
         redraw();

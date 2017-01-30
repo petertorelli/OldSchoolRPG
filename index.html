@@ -3,16 +3,33 @@
 <title></title>
 </head>
 <body>
-<canvas id='draw-grid' width='500pt' height='500pt' style='border: 0px solid black'></canvas>
-<canvas id='viewport' width='250pt' height='250pt' style='border: 1px solid black'></canvas>
+<div style="">
+	<div style="float: left; border: 1px solid black;">
+		<canvas id='draw-grid' width='500pt' height='500pt'></canvas>
+	</div>
+	<div style="float: left; border: 1px solid black; margin-left: 20px;">
+		<canvas id='viewport' width='260pt' height='260pt'></canvas>
+	</div>
+</div>
+<div style="clear: both;"></div>
 <div>
-<input type='radio' name='draw-mode' data-type='edge' checked='checked' value='wall'>Wall
-<input type='radio' name='draw-mode' data-type='edge' value='door'>Door
-<input type='radio' name='draw-mode' data-type='edge' value='hiddendoor'>Hidden Door
-<input type='radio' name='draw-mode' data-type='cell' value='stairs'>Stairs
-<input type='radio' name='draw-mode' data-type='cell' value='darkness'>Darkness
-<input type='radio' name='draw-mode' data-type='cell' value='spin'>Spin
-<input type='radio' name='draw-mode' data-type='cell' value='teleport'>Teleport
+	<div>
+		<h3>Editor controls</h3>
+	</div>
+	<div>
+		<input type='checkbox' name='enable-edit' checked='checked' /> Edit
+	</div>
+	<div>
+		<ul style="list-style-type: none" id="control-list">
+			<li><input type='radio' name='draw-mode' data-type='edge' checked='checked' value='wall' /> Wall
+			<li><input type='radio' name='draw-mode' data-type='edge' value='door' /> Door
+			<li><input type='radio' name='draw-mode' data-type='edge' value='hiddendoor' /> Hidden Door
+			<li><input type='radio' name='draw-mode' data-type='cell' value='stairs' /> Stairs
+			<li><input type='radio' name='draw-mode' data-type='cell' value='darkness' /> Darkness
+			<li><input type='radio' name='draw-mode' data-type='cell' value='spin' /> Spin
+			<li><input type='radio' name='draw-mode' data-type='cell' value='teleport' /> Teleport
+		</ul>
+	</div>
 </div>
 <script type='text/javascript' src='jquery.min.js'></script>
 <script type='text/javascript' src='level.js'></script>
