@@ -24,7 +24,7 @@ The controller:
 let $ctx;
 let $canvas;
 
-var currentLevel = level;;
+var currentLevel = LEVEL_ONE;;
 
 // Instead of using padding can we just do a translate
 let grid = {
@@ -325,20 +325,54 @@ const divMod = (n, d) => {
 };
 
 const findCoordsOfDepthFromParty = (depth) => {
+	if (depth === 0) {
+		return [[[Party.loc.i, Party.loc.j]]];
+	}
 	// oh so recursive
 	// move +depth ahead and enumerate depth/2 left and right into an array
 	// then recurse with depth - 1
 	// the # of cells returned is 2 * depth - 1
 	// return them as an array of pairs
+	let [newi, newj] = [Party.loc.i, Party.loc.j];
+	let result = [];
 	if (Party.facing === 'n') {
+		newj = divMod(Party.loc.j - depth, grid.j);
+		for (let i = Party.loc.i - depth; i <= Party.loc.i + depth; ++i) {
+			newi = divMod(i, grid.i);
+			result.push([newi, newj]);
+		}
 	} else if (Party.facing === 'e') {
+		newi = divMod(Party.loc.i + depth, grid.i);
+		for (let j = Party.loc.j - depth; j <= Party.loc.j + depth; ++j) {
+			newj = divMod(j, grid.j);
+			result.push([newi, newj]);
+		}
 	} else if (Party.facing === 's') {
+		newj = divMod(Party.loc.j + depth, grid.j);
+		for (let i = Party.loc.i - depth; i <= Party.loc.i + depth; ++i) {
+			newi = divMod(i, grid.i);
+			result.push([newi, newj]);
+		}
 	} else { // w
+		newi = divMod(Party.loc.i - depth, grid.i);
+		for (let j = Party.loc.j - depth; j <= Party.loc.j + depth; ++j) {
+			newj = divMod(j, grid.j);
+			result.push([newi, newj]);
+		}
 	}
+
+	let child = findCoordsOfDepthFromParty(depth - 1);
+	child.push(result);
+	return child;;
 };
 
 const draw3dViewPort = () => {
-
+	let frustum = findCoordsOfDepthFromParty(3);
+	frustum.forEach(a1 => {
+		a1.forEach(a2 => {
+			shadeCell({i: a2[0], j: a2[1]}, 'orange')
+		});
+	});
 	let $vp = $('canvas#viewport');
 	let $x = $vp[0].getContext('2d');
 	$x.clearRect(0, 0, $vp.width(), $vp.height());
@@ -418,10 +452,19 @@ const xy2ij = (x, y) => {
 	};
 };
 
+const shadeCell = (cell, color = 'grey') => {
+	let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
+	$ctx.save();
+	$ctx.globalAlpha = 0.25;
+	$ctx.fillStyle = color;
+	$ctx.fillRect(ulcx, ulcy, grid.w, grid.h);
+	$ctx.restore();
+};
+
 /*
  * Draws a cell and closest-edge cursor at the current cell.
  */
-let mouseMoveHandler = (mousex, mousey) => {
+const mouseMoveHandler = (mousex, mousey) => {
 	redraw();
 	// Re-translate mouse to match coord system
 	mousex += grid.w / 2;
@@ -432,21 +475,20 @@ let mouseMoveHandler = (mousex, mousey) => {
 		return;
 	}
 	// Determine the upper-left corner x,y coordinates for the cell.
+	shadeCell(cell);
 	let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
-	$ctx.save();
-	$ctx.globalAlpha = 0.25;
-	$ctx.fillStyle = 'grey';
-	$ctx.fillRect(ulcx, ulcy, grid.w, grid.h);
 	let edge = computeEdgeVertices(ulcx, ulcy, mousex, mousey);
 	if (Session.type === 'edge') {
+		$ctx.save();
 		$ctx.beginPath();
 		$ctx.moveTo(edge.x1, edge.y1);
 		$ctx.lineTo(edge.x2, edge.y2);
+		$ctx.globalAlpha = 0.25;
 		$ctx.strokeStyle = 'blue';
 		$ctx.lineWidth = 5;
 		$ctx.stroke();
+		$ctx.restore();
 	}
-	$ctx.restore();
 	// Save current position so we don't have to recalc on click
 	Cursor.cell.i = cell.i;
 	Cursor.cell.j = cell.j;
