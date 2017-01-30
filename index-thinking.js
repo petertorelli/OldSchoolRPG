@@ -219,7 +219,6 @@ const Party = {
     },
     bash: function () {
     	this.forwardMovement(() => {
-    		console.log("Bashing");
 			let cell = _getCellReference(this.loc.i, this.loc.j);
 			return !(cell.edge[this.facing] === 'door' || 
 					 cell.edge[this.facing] === 'hiddendoor' ||
@@ -250,7 +249,7 @@ let drawGrid = () => {
     $ctx.restore();
 };
 
-let computeEdgeVertices = (ulcx, ulcy, mousex, mousey) => {
+const computeEdgeVertices = (ulcx, ulcy, mousex, mousey) => {
 	// Determine the wall
 	let x1, y1, x2, y2;
 	// partial is the normalized location inside a grid square
@@ -281,7 +280,7 @@ let computeEdgeVertices = (ulcx, ulcy, mousex, mousey) => {
 	return {x1, y1, x2, y2, wall};
 };
 
-let drawParty = () => {
+const drawParty = () => {
     let [ulcx, ulcy] = [Party.loc.i * grid.w, Party.loc.j * grid.h];
     ulcx += grid.w / 2;
     ulcy += grid.h / 2;
@@ -307,7 +306,85 @@ let drawParty = () => {
     $ctx.stroke();
 };
 
-let redraw = () => {
+/**
+ * The most we are ever going to see is a frustum of size:
+ *
+ *    xxxxxxx
+ *     xxxxx
+ *      xxx
+ *       P
+ *
+ * Left wall, right wall, front wall... That's it
+ */
+
+const moveToPct = ($canvas, $context, xpct, ypct) => {
+	$context.moveTo($canvas.width() * xpct, $canvas.height() * ypct);
+};
+
+const lineToPct = ($canvas, $context, xpct, ypct) => {
+	$context.lineTo($canvas.width() * xpct, $canvas.height() * ypct);
+};
+
+const draw3dViewPort = () => {
+
+	let $vp = $('canvas#viewport');
+	let $x = $vp[0].getContext('2d');
+	$x.clearRect(0, 0, $vp.width(), $vp.height());
+	
+	$x.save();
+	$x.strokeStyle = "black";
+	$x.lineWidth = 1;
+
+	let cell = _getCellReference(Party.loc.i, Party.loc.j);
+
+	let edgesToDraw = [];
+
+	if (Party.facing === 'n') {
+		edgesToDraw = ['w', 'n', 'e'];
+	} else if (Party.facing === 'e') {
+		edgesToDraw = ['n', 'e', 's'];
+	} else if (Party.facing === 's') {
+		edgesToDraw = ['e', 's', 'w'];
+	} else { // w
+		edgesToDraw = ['n', 'w', 's'];
+	}
+
+	let edge;
+	// LEFT
+	edge = cell.edge[edgesToDraw[0]];
+	if (edge) {
+		$x.beginPath();
+		moveToPct($vp, $x, 0, 0);
+		lineToPct($vp, $x, 1/8, 1/8);
+		lineToPct($vp, $x, 1/8, 7/8);
+		lineToPct($vp, $x, 0, 1);
+		$x.stroke();
+	}
+	// FRONT
+	edge = cell.edge[edgesToDraw[1]];
+	if (edge) {
+		$x.beginPath();
+		moveToPct($vp, $x, 1/8, 1/8);
+		lineToPct($vp, $x, 7/8, 1/8);
+		lineToPct($vp, $x, 7/8, 7/8);
+		lineToPct($vp, $x, 1/8, 7/8);
+		$x.closePath();
+		$x.stroke();
+	}
+	// RIGHT
+	edge = cell.edge[edgesToDraw[2]];
+	if (edge) {
+		$x.beginPath();
+		moveToPct($vp, $x, 1, 0);
+		lineToPct($vp, $x, 7/8, 1/8);
+		lineToPct($vp, $x, 7/8, 7/8);
+		lineToPct($vp, $x, 1, 1);
+		$x.stroke();
+	}
+	$x.restore();
+};
+
+const redraw = () => {
 	$ctx.clearRect(-grid.w/2, -grid.h/2, $canvas.width(), $canvas.height());
 	drawGrid();
     for (let j = 0; j < 20; ++j) {
@@ -316,12 +393,13 @@ let redraw = () => {
     	}
     }
     drawParty();
+    draw3dViewPort();
 };
 
 /*
  * Expects x & y have been un-translated due to our previous 2D xlate
  */
-let xy2ij = (x, y) => {
+const xy2ij = (x, y) => {
 	return {
 		i: Math.floor(x / grid.w) - 1, // TODO ???? -1 ???
 		j: Math.floor(y / grid.h) - 1, // related to xlate?
