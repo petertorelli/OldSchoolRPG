@@ -24,6 +24,8 @@ The controller:
 let $ctx;
 let $canvas;
 
+var currentLevel = LEVEL_ONE;
+
 // Instead of using padding can we just do a translate
 let grid = {
 	i: 20,
@@ -122,7 +124,8 @@ let RenderPrimTable = {
 // Return a reference to the (logical) cell's unique object
 let _getCellReference = (i, j, k = 1) => {
 	// TODO make a member function that comprehends dimensions
-	return level[i + j * 20];
+	return currentLevel[i + j * (grid.i)];
+	//return level[i + j * 20];
 };
 
 let _renderEdge = (x1, y1, x2, y2, edge, edgeType) => {
@@ -158,7 +161,19 @@ let _renderCell = function (i, j) {
 	}
 };
 
-let Party = {
+/**
+ * Give an [i, j] coordinate and wrap it if exceeds grid dimensions
+ */
+const gridWrap = (i, j) => {
+	let [wi, wj] = [i, j];
+    wi = (wi >= grid.i) ? 0 : wi;
+    wj = (wj >= grid.j) ? 0 : wj;
+    wi = (wi < 0) ? grid.i - 1 : wi;
+    wj = (wj < 0) ? grid.j - 1 : wj;
+    return [wi, wj];
+};
+
+const Party = {
     loc: {
         i: 0,
         j: 19,
@@ -176,39 +191,41 @@ let Party = {
         	(this.facing === 'e' ? 's' : 
         	(this.facing === 's' ? 'w' : 'n')));
     },
-    advance: function () {
+    forwardMovement: function (collisionCheckFuncton) {
         if (this.facing === 'n') {
-            if (! this.collisionCheck(this.facing)) {
+            if (! collisionCheckFuncton(this.facing)) {
                 this.loc.j -= 1;
             }
         } else if (this.facing === 'e') {
-            if (! this.collisionCheck(this.facing)) {
+            if (! collisionCheckFuncton(this.facing)) {
                 this.loc.i += 1;
             }
         } else if (this.facing === 's') {
-            if (! this.collisionCheck(this.facing)) {
+            if (! collisionCheckFuncton(this.facing)) {
                 this.loc.j += 1;
             }
         } else {
-            if (! this.collisionCheck(this.facing)) {
+            if (! collisionCheckFuncton(this.facing)) {
                 this.loc.i -= 1;
             }
         }
-        this.wrap();
+        [this.loc.i, this.loc.j] = gridWrap(this.loc.i, this.loc.j);
     },
-    wrap: function () {
-        this.loc.i = (this.loc.i >= grid.i) ? 0 : this.loc.i;
-        this.loc.j = (this.loc.j >= grid.j) ? 0 : this.loc.j;
-        this.loc.i = (this.loc.i < 0) ? grid.i - 1 : this.loc.i;
-        this.loc.j = (this.loc.j < 0) ? grid.j - 1 : this.loc.j;
+    advance: function () {
+    	this.forwardMovement(() => {
+			let cell = _getCellReference(this.loc.i, this.loc.j);
+			return (cell.edge[this.facing] !== undefined);
+    	});
     },
-    collisionCheck: function () {
-		let cell = _getCellReference(this.loc.i, this.loc.j);
-		if (cell.edge[this.facing] !== undefined) {
-			return 1;
-		}
-        return 0;
-    }
+    bash: function () {
+    	this.forwardMovement(() => {
+    		console.log("Bashing");
+			let cell = _getCellReference(this.loc.i, this.loc.j);
+			return !(cell.edge[this.facing] === 'door' || 
+					 cell.edge[this.facing] === 'hiddendoor' ||
+					 cell.edge[this.facing] === undefined);
+    	});
+    },
 };
 
 let drawGrid = () => {
@@ -348,17 +365,62 @@ let mouseMoveHandler = (mousex, mousey) => {
 
 let continuityChecks = () => {
 	// #1 Make opposite cell's wall match current edge!
+	// Wall, Door, Hidden Door
+	/*    Adjacent cell sharing edge
+	 *    W D h E
+	 *  W b b b W
+	 *  D k k k W
+	 *  h k k k W
+	 *  E W W W e
+	 * ^-- this cell
+	 * b = do nothing; logic blocked, can't pass
+	 * W = add wall
+	 * k = do nothing; logic kick
+	 */
+	let oi, oj, oe;
+	if (Cursor.edge === 'n') {
+		oi = Cursor.cell.i + 0;
+		oj = Cursor.cell.j - 1;
+		oe = 's';
+	} else if (Cursor.edge ==='s') {
+		oi = Cursor.cell.i + 0;
+		oj = Cursor.cell.j + 1;
+		oe = 'n';
+	} else if (Cursor.edge === 'e') {
+		oi = Cursor.cell.i + 1;
+		oj = Cursor.cell.j + 0;
+		oe = 'w';
+	} else { // w
+		oi = Cursor.cell.i - 1;
+		oj = Cursor.cell.j + 0;
+		oe = 'e';
+	}
+	[oi, oj] = gridWrap(oi, oj);
+	let cell = _getCellReference(Cursor.cell.i, Cursor.cell.j);
+	let ocell = _getCellReference(oi, oj);
+	if (cell.edge[Cursor.edge] === undefined) {
+		ocell.edge[oe] = undefined;
+	} else {
+		if (ocell.edge[oe] === undefined) {
+			ocell.edge[oe] = 'wall';
+		}
+	}
 };
 
 let handleCanvasClick = () => {
 	console.log(Cursor.cell.i, Cursor.cell.j, Cursor.edge, Session.mode);
 	let cell = _getCellReference(Cursor.cell.i, Cursor.cell.j);
 	if (Session.type === 'edge') {
+		// If mode is what is on the edge, remove it
 		if (cell.edge[Cursor.edge] === Session.mode) {
 			cell.edge[Cursor.edge] = undefined;
-		} else {
+		}
+		// Otherwise add it 
+		else {
 			cell.edge[Cursor.edge] = Session.mode;
 		}
+		// Continuity check wall & cell edits
+		continuityChecks();
 	} else if (Session.type === 'cell') {
 		if (Session.mode === 'stairs') {
 			if (cell.properties.stairs === 'none') {
@@ -417,6 +479,8 @@ $(() => {
         } else if (e.which === 39) { // right turn
             Party.turnRight();
         } else if (e.which === 40) { // down
+        } else if (e.which === 0x42 || e.which === 0x62) {
+        	Party.bash();
         }
         redraw();
     });
