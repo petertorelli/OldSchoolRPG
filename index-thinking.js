@@ -24,7 +24,7 @@ The controller:
 let $ctx;
 let $canvas;
 
-var currentLevel = LEVEL_ONE;
+var currentLevel = level;;
 
 // Instead of using padding can we just do a translate
 let grid = {
@@ -165,12 +165,7 @@ let _renderCell = function (i, j) {
  * Give an [i, j] coordinate and wrap it if exceeds grid dimensions
  */
 const gridWrap = (i, j) => {
-	let [wi, wj] = [i, j];
-    wi = (wi >= grid.i) ? 0 : wi;
-    wj = (wj >= grid.j) ? 0 : wj;
-    wi = (wi < 0) ? grid.i - 1 : wi;
-    wj = (wj < 0) ? grid.j - 1 : wj;
-    return [wi, wj];
+    return [divMod(i, grid.i), divMod(j, grid.j)];
 };
 
 const Party = {
@@ -323,6 +318,23 @@ const moveToPct = ($canvas, $context, xpct, ypct) => {
 
 const lineToPct = ($canvas, $context, xpct, ypct) => {
 	$context.lineTo($canvas.width() * xpct, $canvas.height() * ypct);
+};
+
+const divMod = (n, d) => {
+	return n - d * Math.floor(n / d);
+};
+
+const findCoordsOfDepthFromParty = (depth) => {
+	// oh so recursive
+	// move +depth ahead and enumerate depth/2 left and right into an array
+	// then recurse with depth - 1
+	// the # of cells returned is 2 * depth - 1
+	// return them as an array of pairs
+	if (Party.facing === 'n') {
+	} else if (Party.facing === 'e') {
+	} else if (Party.facing === 's') {
+	} else { // w
+	}
 };
 
 const draw3dViewPort = () => {
