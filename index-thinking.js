@@ -26,6 +26,8 @@ let $canvas;
 
 var currentLevel = LEVEL_ONE;;
 
+let viewDepth = 3; // don't read this from the form it can be 0 sometimes
+
 // Instead of using padding can we just do a translate
 const grid = {
 	i: 20,
@@ -170,8 +172,8 @@ const gridWrap = (i, j) => {
 
 const Party = {
     loc: {
-        i: 0,
-        j: 19,
+        i: 9,
+        j: 9,
     },
     facing: 'n',
     turnLeft: function () {
@@ -349,13 +351,13 @@ const findCoordsOfDepthFromParty = (depth) => {
 		}
 	} else if (Party.facing === 's') {
 		newj = divMod(Party.loc.j + depth, grid.j);
-		for (let i = Party.loc.i - depth; i <= Party.loc.i + depth; ++i) {
+		for (let i = Party.loc.i + depth; i >= Party.loc.i - depth; --i) {
 			newi = divMod(i, grid.i);
 			result.push([newi, newj]);
 		}
 	} else { // w
 		newi = divMod(Party.loc.i - depth, grid.i);
-		for (let j = Party.loc.j - depth; j <= Party.loc.j + depth; ++j) {
+		for (let j = Party.loc.j + depth; j >= Party.loc.j - depth; --j) {
 			newj = divMod(j, grid.j);
 			result.push([newi, newj]);
 		}
@@ -366,22 +368,237 @@ const findCoordsOfDepthFromParty = (depth) => {
 	return child;;
 };
 
+const findVizTriad = (start, facing) => {
+	let result = [];
+	if (facing === 'n') {
+		j = divMod(start.j - 1, grid.j);
+		for (let i = start.i - 1; i <= start.i + 1; ++i) {
+			result.push({i: divMod(i, grid.i), j});
+		}
+	} else if (facing === 's') {
+		j = divMod(start.j + 1, grid.j);
+		for (let i = start.i + 1; i >= start.i - 1; --i) {
+			result.push({i: divMod(i, grid.i), j});
+		}
+	} else if (facing === 'e') {
+		i = divMod(start.i + 1, grid.i);
+		for (let j = start.j - 1; j <= start.j + 1; ++j) {
+			result.push({i, j: divMod(j, grid.j)});
+		}
+	} else {
+		i = divMod(start.i - 1, grid.i);
+		for (let j = start.j + 1; j >= start.j - 1; --j) {
+			result.push({i, j: divMod(j, grid.j)});
+		}
+	}
+	return result;
+};
+
+const nsew2fbrl = {
+	n: { f: 'n', b: 's', r: 'e', l: 'w' },
+	s: { f: 's', b: 'n', r: 'w', l: 'e' },
+	e: { f: 'e', b: 'w', r: 's', l: 'n' },
+	w: { f: 'w', b: 'e', r: 'n', l: 's' }
+};
+
+// recursively descend triads for occlusion
+//
+//    P          C
+//   111   -->  R
+//  22222      RCL 
+const culledPartyVizFrustum = (start, facing, depth) => {
+	if (depth === 0) {
+		return;
+	}
+	let [ L, C, R ] = findVizTriad(start, facing);
+	// cardinal directions now become Left, Center, Right visibility
+	// Do we go left? only if the left-cell has no right-wall
+	// Do we go forward? only if the center cell has no nearest wall
+	// Do we go right? only if the right-cell has no left-wall
+	let lc, cc, rc;
+
+	// Can we see into the LEFT cell?
+	lc = _getCellReference(L.i, L.j);
+	cc = _getCellReference(C.i, C.j);
+	rc = _getCellReference(R.i, R.j);
+	sc = _getCellReference(start.i, start.j);
+
+
+	if (!(
+			(
+				lc.edge[nsew2fbrl[facing]['r']] !== undefined &&
+				sc.edge[nsew2fbrl[facing]['l']] !== undefined
+			) ||
+			(
+				sc.edge[nsew2fbrl[facing]['f']] !== undefined &&
+				sc.edge[nsew2fbrl[facing]['l']] !== undefined
+			) ||
+			(
+				lc.edge[nsew2fbrl[facing]['b']] !== undefined &&
+				lc.edge[nsew2fbrl[facing]['r']] !== undefined
+			) ||
+			(
+				lc.edge[nsew2fbrl[facing]['b']] !== undefined &&
+				sc.edge[nsew2fbrl[facing]['f']] !== undefined
+			)
+		))
+	{
+		shadeCell(L, 'red');
+		culledPartyVizFrustum(L, facing, depth - 1);
+	}
+
+	if (!(
+			(
+				cc.edge[nsew2fbrl[facing]['b']] !== undefined
+			)
+		))
+	{
+		shadeCell(C, 'green');
+		culledPartyVizFrustum(C, facing, depth - 1);		
+	}
+
+	if (!(
+			(
+				rc.edge[nsew2fbrl[facing]['l']] !== undefined &&
+				sc.edge[nsew2fbrl[facing]['r']] !== undefined
+			) ||
+			(
+				sc.edge[nsew2fbrl[facing]['f']] !== undefined &&
+				sc.edge[nsew2fbrl[facing]['r']] !== undefined
+			) ||
+			(
+				rc.edge[nsew2fbrl[facing]['b']] !== undefined &&
+				rc.edge[nsew2fbrl[facing]['l']] !== undefined
+			) ||
+			(
+				rc.edge[nsew2fbrl[facing]['b']] !== undefined &&
+				sc.edge[nsew2fbrl[facing]['f']] !== undefined
+			)
+		))
+	{
+		shadeCell(R, 'blue');
+		culledPartyVizFrustum(R, facing, depth - 1);
+	}
+};
+
 const draw3dViewPort = () => {
-	let frustum = findCoordsOfDepthFromParty(3);
+
+	let frustum = findCoordsOfDepthFromParty(1);
 	frustum.forEach(a1 => {
 		a1.forEach(a2 => {
 			shadeCell({i: a2[0], j: a2[1]}, 'orange')
 		});
 	});
+	/*
+	let cull = culledPartyVizFrustum(Party.loc, Party.facing, viewDepth);
+	*/
 	let $vp = $('canvas#viewport');
 	let $x = $vp[0].getContext('2d');
 
-	
 	$x.save();
 	$x.fillStyle = "#222";
 	$x.fillRect(0, 0, $vp.width(), $vp.height());
 	$x.strokeStyle = "lightgreen";
+	$x.lineJoin = 'bevel';
 	$x.lineWidth = 2;
+
+	// frustum[1] = [ L1[i,j], C1[i,j], R1[i,j] ]
+	// frustum[0] = [          C0[i,j]          ]
+
+	let L, C, R, P;
+	// What do we see one look ahead?
+	C0 = _getCellReference(frustum[0][0][0], frustum[0][0][1]);
+	L1 = _getCellReference(frustum[1][0][0], frustum[1][0][1]);
+	C1 = _getCellReference(frustum[1][1][0], frustum[1][1][1]);
+	R1 = _getCellReference(frustum[1][2][0], frustum[1][2][1]);
+
+	let xlt = nsew2fbrl[Party.facing];
+
+	if (C0.edge[xlt.l] === undefined) {
+		// sees L1.f
+		if (L1.edge[xlt.b] === undefined) {
+		} else {
+			$x.beginPath();
+			moveToPct($vp, $x, 0/8, 1/8);
+			lineToPct($vp, $x, 1/8, 1/8);
+			lineToPct($vp, $x, 1/8, 7/8);
+			lineToPct($vp, $x, 0/8, 7/8);
+			$x.stroke();
+		}
+	} else {
+		$x.beginPath();
+		moveToPct($vp, $x, 0/8, 0/8);
+		lineToPct($vp, $x, 1/8, 1/8);
+		lineToPct($vp, $x, 1/8, 7/8);
+		lineToPct($vp, $x, 0/8, 8/8);
+		$x.stroke();
+	}
+
+	if (C0.edge[xlt.f] === undefined) {
+		// sees L1.r, C1.f, R1.l
+		if (L1.edge[xlt.r] === undefined) {
+		} else {
+			$x.beginPath();
+			moveToPct($vp, $x, 1.0/8, 1.0/8);
+			lineToPct($vp, $x, 2.5/8, 2.5/8);
+			lineToPct($vp, $x, 2.5/8, 5.5/8);
+			lineToPct($vp, $x, 1.0/8, 7.0/8);
+			$x.closePath();
+			$x.stroke();
+		}
+		// f is actually b of the next step. ahhh... need to decide f/b
+		if (C1.edge[xlt.f] === undefined) {
+		} else {
+			$x.beginPath();
+			moveToPct($vp, $x, 2.5/8, 2.5/8);
+			lineToPct($vp, $x, 5.5/8, 2.5/8);
+			lineToPct($vp, $x, 5.5/8, 5.5/8);
+			lineToPct($vp, $x, 2.5/8, 5.5/8);
+			$x.closePath();
+			$x.stroke();
+		}
+		// don't forget C1 neighbors' .b ... uh oh there's the problem
+		if (R1.edge[xlt.l] === undefined) {
+		} else {
+			$x.beginPath();
+			moveToPct($vp, $x, 7.0/8, 1.0/8);
+			lineToPct($vp, $x, 5.5/8, 2.5/8);
+			lineToPct($vp, $x, 5.5/8, 5.5/8);
+			lineToPct($vp, $x, 7.0/8, 7.0/8);
+			$x.closePath();
+			$x.stroke();
+		}
+	} else {
+		$x.beginPath();
+		moveToPct($vp, $x, 1/8, 1/8);
+		lineToPct($vp, $x, 7/8, 1/8);
+		lineToPct($vp, $x, 7/8, 7/8);
+		lineToPct($vp, $x, 1/8, 7/8);
+		$x.closePath();
+		$x.stroke();
+	}
+
+	if (C0.edge[xlt.r] === undefined) {
+		// sees R1.f
+		if (R1.edge[xlt.b] === undefined) {
+		} else {
+			$x.beginPath();
+			moveToPct($vp, $x, 8/8, 1/8);
+			lineToPct($vp, $x, 7/8, 1/8);
+			lineToPct($vp, $x, 7/8, 7/8);
+			lineToPct($vp, $x, 8/8, 7/8);
+			$x.stroke();
+		}
+	} else {
+		$x.beginPath();
+		moveToPct($vp, $x, 8/8, 0/8);
+		lineToPct($vp, $x, 7/8, 1/8);
+		lineToPct($vp, $x, 7/8, 7/8);
+		lineToPct($vp, $x, 8/8, 8/8);
+		$x.stroke();
+	}
+
+	/*
 
 	let cell = _getCellReference(Party.loc.i, Party.loc.j);
 
@@ -429,19 +646,22 @@ const draw3dViewPort = () => {
 		lineToPct($vp, $x, 1, 1);
 		$x.stroke();
 	}
+
+	*/
+
 	$x.restore();
 };
 
 const redraw = () => {
 	$ctx.clearRect(-grid.w/2, -grid.h/2, $canvas.width(), $canvas.height());
 	drawGrid();
+    draw3dViewPort();
     for (let j = 0; j < 20; ++j) {
     	for (let i = 0; i < 20; ++i) {
     		_renderCell(i, j);
     	}
     }
-    drawParty();
-    draw3dViewPort();
+    drawParty();    
 };
 
 /*
@@ -599,6 +819,10 @@ $(() => {
 	$('input[name=enable-edit]').on('click', e => {
 		$('input[name=draw-mode]').prop('disabled', !e.target.checked);
 	});
+	$('input[name=view-depth').on('blur', (e) => {
+		viewDepth = e.target.value;
+		redraw();
+	});
     // The controller... that's really it!
     $('body').keydown((e) => {
         if (e.which === 37) { // left turn
@@ -614,4 +838,6 @@ $(() => {
         redraw();
     });
     redraw();
+	$('input[name=enable-edit]').click();  
+
 });
