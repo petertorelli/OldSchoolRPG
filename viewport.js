@@ -115,7 +115,7 @@ const draw3dViewPort = () => {
 	let frustum = findCoordsOfDepthFromParty(depth);
 	frustum.forEach(a1 => {
 		a1.forEach(a2 => {
-			shadeCell({i: a2[0], j: a2[1]}, 'orange')
+			LevelMap.shadeCell({i: a2[0], j: a2[1]}, 'orange')
 		});
 	});
 	let VP3D = $('canvas#viewport');

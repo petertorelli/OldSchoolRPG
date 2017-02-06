@@ -15,11 +15,6 @@ const grid = {
 	h: 0,
 };
 
-const Session = {
-	mode: undefined,
-	type: undefined,
-};
-
 // Return a reference to the (logical) cell's unique object
 const _getCellReference = (i, j, k = 1) => {
 	// TODO make a member function that comprehends dimensions

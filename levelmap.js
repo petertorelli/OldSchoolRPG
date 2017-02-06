@@ -11,8 +11,9 @@ const Cursor = {
  	edge: undefined,
 };
 
-const continuityChecks = () => {
+const continuityChecks = (currentCell) => {
 	// #1 Make opposite cell's wall match current edge!
+	// ------------------------------------------------
 	// Wall, Door, Hidden Door
 	/*    Adjacent cell sharing edge
 	 *    W D h E
@@ -26,36 +27,36 @@ const continuityChecks = () => {
 	 * k = do nothing; logic kick
 	 */
 	let oi, oj, oe;
-	if (Cursor.edge === 'n') {
-		oi = Cursor.cell.i + 0;
-		oj = Cursor.cell.j - 1;
+	if (currentCell.edge === 'n') {
+		oi = currentCell.cell.i + 0;
+		oj = currentCell.cell.j - 1;
 		oe = 's';
-	} else if (Cursor.edge ==='s') {
-		oi = Cursor.cell.i + 0;
-		oj = Cursor.cell.j + 1;
+	} else if (currentCell.edge ==='s') {
+		oi = currentCell.cell.i + 0;
+		oj = currentCell.cell.j + 1;
 		oe = 'n';
-	} else if (Cursor.edge === 'e') {
-		oi = Cursor.cell.i + 1;
-		oj = Cursor.cell.j + 0;
+	} else if (currentCell.edge === 'e') {
+		oi = currentCell.cell.i + 1;
+		oj = currentCell.cell.j + 0;
 		oe = 'w';
 	} else { // w
-		oi = Cursor.cell.i - 1;
-		oj = Cursor.cell.j + 0;
+		oi = currentCell.cell.i - 1;
+		oj = currentCell.cell.j + 0;
 		oe = 'e';
 	}
 	[oi, oj] = gridWrap(oi, oj);
-	let cell = _getCellReference(Cursor.cell.i, Cursor.cell.j);
+	let cell = _getCellReference(currentCell.cell.i, currentCell.cell.j);
 	let ocell = _getCellReference(oi, oj);
-	if (cell.edge[Cursor.edge] === undefined) {
+	if (cell.edge[currentCell.edge] === undefined) {
 		ocell.edge[oe] = undefined;
 	} else {
 		if (ocell.edge[oe] === undefined) {
 			ocell.edge[oe] = 'wall';
 		}
 	}
+
+	// #2... There is no check #2
 };
-
-
 
 /*
  * For some reason 'this' is returning the root window and not
@@ -157,45 +158,6 @@ const RenderPrimTable = {
 	},
 };
 
-
-
-const _renderEdge = (x1, y1, x2, y2, edge, edgeType) => {
-	// TODO Might be faster to store a reference to the render function too
-	if (edgeType === undefined) {
-		return;
-	}
-	let renderFunc = RenderPrimTable['edge:' + edgeType];
-	if (renderFunc === undefined) {
-		console.error(`_renderEdge: Edge type? ${edgeType}`);
-		return;
-	}
-	renderFunc(x1, y1, x2, y2, edge);
-};
-
-const _renderCell = (i, j) => {
-	// Translate grid coords to logical bounding box (only compute once)
-	let [ulx, uly] = [i * grid.w, j * grid.h];
-	let [lrx, lry] = [ulx + grid.w, uly + grid.h];
-	let cell = _getCellReference(i, j);
-	// Edge rendering is deterministic (no culling optimization here)
-	_renderEdge(ulx, uly, lrx, uly, 'n', cell.edge.n);
-	_renderEdge(lrx, uly, lrx, lry, 'e', cell.edge.e);
-	_renderEdge(ulx, lry, lrx, lry, 's', cell.edge.s);
-	_renderEdge(ulx, uly, ulx, lry, 'w', cell.edge.w);
-	// Render cell contents
-	if (cell.properties.stairs !== 'none') {
-		RenderPrimTable.stairs(ulx, uly, cell.properties.stairs);
-	}
-	if (cell.properties.darkness) {
-	}
-	if (cell.properties.spinner) {
-	}
-};
-
-
-
-
-
 const computeEdgeVertices = (ulcx, ulcy, mousex, mousey) => {
 	// Determine the wall
 	let x1, y1, x2, y2;
@@ -227,51 +189,9 @@ const computeEdgeVertices = (ulcx, ulcy, mousex, mousey) => {
 	return {x1, y1, x2, y2, wall};
 };
 
-
-
-const shadeCell = (cell, color) => {
-	let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
-	$ctx.save();
-	$ctx.globalAlpha = 0.25;
-	$ctx.fillStyle = color;
-	$ctx.fillRect(ulcx, ulcy, grid.w, grid.h);
-	$ctx.restore();
-};
-
-const handleCanvasClick = () => {
-	if ($('input[name=enable-edit]').prop('checked') === false) {
-		return;
-	}
-	let cell = _getCellReference(Cursor.cell.i, Cursor.cell.j);
-	if (Session.type === 'edge') {
-		// If mode is what is on the edge, remove it
-		if (cell.edge[Cursor.edge] === Session.mode) {
-			cell.edge[Cursor.edge] = undefined;
-		}
-		// Otherwise add it 
-		else {
-			cell.edge[Cursor.edge] = Session.mode;
-		}
-		// Continuity check wall & cell edits
-		continuityChecks();
-	} else if (Session.type === 'cell') {
-		if (Session.mode === 'stairs') {
-			if (cell.properties.stairs === 'none') {
-				cell.properties.stairs = 'up';
-			} else if (cell.properties.stairs === 'up') {
-				cell.properties.stairs = 'down';
-			} else {
-				cell.properties.stairs = 'none';
-			}
-		} else {
-			cell.properties[Session.mode] = ! cell.properties[Session.mode];
-		}
-	}
-	continuityChecks();
-	redraw();
-};
-
 const LevelMap = {
+	editType: undefined,
+	editMode: undefined,
 	init: function (canvas) {
 		this.CANVAS = canvas;
 		this.CONTEXT = this.CANVAS[0].getContext('2d');
@@ -282,15 +202,54 @@ const LevelMap = {
 	translate: function (x, y) {
 		this.CONTEXT.translate(x, y);
 	},
+	drawEdge: function (x1, y1, x2, y2, edge, edgeType) {
+		// TODO Might be faster to store a reference to the draw function too
+		if (edgeType === undefined) {
+			return;
+		}
+		let drawFunc = RenderPrimTable['edge:' + edgeType];
+		if (drawFunc === undefined) {
+			console.error(`drawEdge: Edge type? ${edgeType}`);
+			return;
+		}
+		drawFunc(x1, y1, x2, y2, edge);
+	},
+	drawCell: function (i, j) {
+		// Translate grid coords to logical bounding box (only compute once)
+		let [ulx, uly] = [i * grid.w, j * grid.h];
+		let [lrx, lry] = [ulx + grid.w, uly + grid.h];
+		let cell = _getCellReference(i, j);
+		// Edge drawing is deterministic (no culling optimization here)
+		this.drawEdge(ulx, uly, lrx, uly, 'n', cell.edge.n);
+		this.drawEdge(lrx, uly, lrx, lry, 'e', cell.edge.e);
+		this.drawEdge(ulx, lry, lrx, lry, 's', cell.edge.s);
+		this.drawEdge(ulx, uly, ulx, lry, 'w', cell.edge.w);
+		// Render cell contents
+		if (cell.properties.stairs !== 'none') {
+			RenderPrimTable.stairs(ulx, uly, cell.properties.stairs);
+		}
+		if (cell.properties.darkness) {
+		}
+		if (cell.properties.spinner) {
+		}
+	},
 	draw: function () {
 		this.CONTEXT.clearRect(-grid.w/2, -grid.h/2, this.CANVAS.width(), this.CANVAS.height());
 		this.drawGrid();
 	    for (let j = 0; j < 20; ++j) {
 	    	for (let i = 0; i < 20; ++i) {
-	    		_renderCell(i, j);
+	    		this.drawCell(i, j);
 	    	}
 	    }
 	    RenderPrimTable.party(Party.loc);
+	},
+	shadeCell: function (cell, color) {
+		let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
+		this.CONTEXT.save();
+		this.CONTEXT.globalAlpha = 0.25;
+		this.CONTEXT.fillStyle = color;
+		this.CONTEXT.fillRect(ulcx, ulcy, grid.w, grid.h);
+		this.CONTEXT.restore();
 	},
 	/*
 	 * Draws a cell and closest-edge cursor at the current cell.
@@ -309,10 +268,10 @@ const LevelMap = {
 			return;
 		}
 		// Determine the upper-left corner x,y coordinates for the cell.
-		shadeCell(cell, $('input[name=enable-edit]').prop('checked') ? 'blue' : 'grey');
+		this.shadeCell(cell, $('input[name=enable-edit]').prop('checked') ? 'blue' : 'grey');
 		let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
 		let edge = computeEdgeVertices(ulcx, ulcy, mousex, mousey);
-		if (Session.type === 'edge') {
+		if (this.editType === 'edge') {
 			this.CONTEXT.save();
 			this.CONTEXT.beginPath();
 			this.CONTEXT.moveTo(edge.x1, edge.y1);
@@ -348,6 +307,38 @@ const LevelMap = {
 	    this.CONTEXT.lineWidth = 1;
 	    this.CONTEXT.stroke();
 	    this.CONTEXT.restore();
+	},
+	handleCanvasClick: function () {
+		if ($('input[name=enable-edit]').prop('checked') === false) {
+			return;
+		}
+		let cell = _getCellReference(Cursor.cell.i, Cursor.cell.j);
+		if (this.editType === 'edge') {
+			// If mode is what is on the edge, remove it
+			if (cell.edge[Cursor.edge] === this.editMode) {
+				cell.edge[Cursor.edge] = undefined;
+			}
+			// Otherwise add it 
+			else {
+				cell.edge[Cursor.edge] = this.editMode;
+			}
+			// Continuity check wall & cell edits
+			continuityChecks(Cursor);
+		} else if (this.editType === 'cell') {
+			if (this.editMode === 'stairs') {
+				if (cell.properties.stairs === 'none') {
+					cell.properties.stairs = 'up';
+				} else if (cell.properties.stairs === 'up') {
+					cell.properties.stairs = 'down';
+				} else {
+					cell.properties.stairs = 'none';
+				}
+			} else {
+				cell.properties[this.editMode] = ! cell.properties[this.editMode];
+			}
+		}
+		continuityChecks(Cursor);
+		redraw();
 	},
 };
 
