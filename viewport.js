@@ -86,6 +86,41 @@ const drawWallLR = (VP3D, VP3DCTX, X, Y, isLeft) => {
 };
 
 /**
+ * This is a SMALLER trapezoid that changes shape with x, fortunately it is
+ * symmetric about the horizontal axis
+ */
+const drawDoorLR = (VP3D, VP3DCTX, X, Y, isLeft) => {
+	drawWallLR(VP3D, VP3DCTX, X, Y, isLeft);
+	let modifier = isLeft ? 0 : 1;
+ 	let w;
+ 	w = (MAX_W - PERSP[Y + 1] * 2) / MAX_W;
+ 	// x1, y1 is just the URC of the front-facing square
+ 	let [x1, y1] = [(PERSP[Y + 1] / MAX_W) + ((X + modifier) * w), PERSP[Y + 1] / MAX_H];
+ 	// x2, y2 is the ULC of the front-facing square directly behind it
+ 	w = (MAX_W - PERSP[Y + 0] * 2) / MAX_W;
+ 	let [x2, y2] = [(PERSP[Y + 0] / MAX_W) + ((X + modifier) * w), PERSP[Y + 0] / MAX_H];
+
+ 	console.log(x1, x2);
+ 	if (isLeft) {
+ 		x1 -= (x1 * 0.10);
+ 		x2 += (x2 * 0.10);
+ 	} else {
+ 		x1 += (x1 * 0.10);
+ 		x2 -= (x2 * 0.10);
+ 	}
+ 	console.log(x1, x2);
+
+
+	VP3DCTX.beginPath();
+	moveToPct(VP3D, VP3DCTX, x1, y1);
+	lineToPct(VP3D, VP3DCTX, x2, y2);
+	lineToPct(VP3D, VP3DCTX, x2, 0.50); //1 - y2);
+	lineToPct(VP3D, VP3DCTX, x1, 0.50); //1 - y1);
+	VP3DCTX.closePath();
+//	VP3DCTX.fill();
+	VP3DCTX.stroke();
+};
+/**
  * This is the easiest, it's just a square slid left/right
  */
 const drawWallF = (VP3D, VP3DCTX, X, Y) => {
@@ -104,13 +139,35 @@ const drawWallF = (VP3D, VP3DCTX, X, Y) => {
 };
 
 
+/**
+ * This is the easiest, it's just a SMALLER square slid left/right
+ */
+const drawDoorF = (VP3D, VP3DCTX, X, Y) => {
+	drawWallF(VP3D, VP3DCTX, X, Y)
+ 	let w = (MAX_W - PERSP[Y + 1] * 2) / MAX_W;
+ 	let h = (MAX_H - PERSP[Y + 1] * 2) / MAX_H;
+ 	let [x1, y1] = [(PERSP[Y + 1] / MAX_W) + (X * w), PERSP[Y + 1] / MAX_H];
+ 	let [x2, y2] = [x1 + w, y1 + h];
+ 	x1 += (w * 0.125);
+ 	y1 += (h * 0.125);
+ 	x2 -= (w * 0.125);
+	VP3DCTX.beginPath();
+	moveToPct(VP3D, VP3DCTX, x1, y1);
+	lineToPct(VP3D, VP3DCTX, x2, y1);
+	lineToPct(VP3D, VP3DCTX, x2, y2);
+	lineToPct(VP3D, VP3DCTX, x1, y2);
+	VP3DCTX.closePath();
+	VP3DCTX.fill();
+	VP3DCTX.stroke();
+};
+
 const draw3dViewPort = () => {
 	// This creates a ZANY inverse FOV that goes beyond the frustum
 	for (let x = 1; x < 7; ++x) {
 		PERSP.push(PERSP[x] + (THETA / Math.pow(2, x - 1)));
 	}
 
-	let depth = 4;
+	let depth = 2;
 
 	let frustum = findCoordsOfDepthFromParty(depth);
 	frustum.forEach(a1 => {
@@ -132,6 +189,7 @@ const draw3dViewPort = () => {
 	let i, j;		// Grid coordinates of current cell
 	let L, C, R;	// LCR cell references
 	let T;			// Cardinal direction to relative orientation transform
+	let toDraw;
 	T = XLATE_UCS2PARTY[Party.facing];
 	for (y = depth; y >= 0; --y) {
 		for (x = 0; x <= 2 * y + 2; ++x) {
@@ -139,8 +197,11 @@ const draw3dViewPort = () => {
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
 			// Render all C.f walls
-			if (C.edge[T.f] !== undefined) {
+			toDraw = C.edge[T.f];
+			if (toDraw === "wall") {
 				drawWallF(VP3D, VP3DCTX, x - (y + 1), y);
+			} else if (toDraw === "door") {
+				drawDoorF(VP3D, VP3DCTX, x - (y + 1), y);
 			}
 		}
 		// Render R walls to the RIGHT
@@ -148,8 +209,11 @@ const draw3dViewPort = () => {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
-			if (C.edge[T.r] !== undefined) {
+			toDraw = C.edge[T.r];
+			if (toDraw === "wall") {
 				drawWallLR(VP3D, VP3DCTX, x - (y + 1), y, false);
+			} else if (toDraw === "door") {
+				drawDoorLR(VP3D, VP3DCTX, x - (y + 1), y, false);
 			}
 		}
 		// Render L walls to the LEFT
@@ -157,8 +221,11 @@ const draw3dViewPort = () => {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
-			if (C.edge[T.l] !== undefined) {
+			toDraw = C.edge[T.l];
+			if (toDraw === "wall") {
 				drawWallLR(VP3D, VP3DCTX, x - (y + 1), y, true);
+			} else if (toDraw === "door") {
+				drawDoorLR(VP3D, VP3DCTX, x - (y + 1), y, true);
 			}
 		}
 	}
