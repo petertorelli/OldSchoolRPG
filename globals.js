@@ -1,7 +1,7 @@
 
 
 let currentLevel;
-if (1) {
+if (0) {
 	currentLevel = level;
 } else {
 	currentLevel = LEVEL_ONE;
