@@ -1,4 +1,19 @@
 
+const PIXEL_RATIO = (function () {
+    let 
+        ctx = document.createElement("canvas").getContext("2d"),
+        dpr = window.devicePixelRatio || 1,
+        bsr = 
+            ctx.webkitBackingStorePixelRatio ||
+            ctx.mozBackingStorePixelRatio ||
+            ctx.msBackingStorePixelRatio ||
+            ctx.oBackingStorePixelRatio ||
+            ctx.backingStorePixelRatio || 1;
+    return dpr / bsr;
+})();
+
+console.log('Device pixel ratio: ' + PIXEL_RATIO);
+
 const redraw = () => {
     LevelMap.draw();
     draw3dViewPort();

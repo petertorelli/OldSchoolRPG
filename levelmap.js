@@ -289,6 +289,7 @@ const LevelMap = {
 	},
 	drawGrid: function () {
 	    this.CONTEXT.save();
+	    //this.CONTEXT.setTransform(PIXEL_RATIO, 0, 0, PIXEL_RATIO, 0, 0);
 	    this.CONTEXT.beginPath();
 	    for (let i = 0; i <= grid.i; ++i) {
 	        let [x1, y1] = [i * grid.w, 0]
