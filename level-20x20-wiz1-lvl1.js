@@ -116,7 +116,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -127,7 +127,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -339,7 +339,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -349,7 +349,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -566,7 +566,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -576,7 +576,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -791,7 +791,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -802,7 +802,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1006,7 +1006,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1016,7 +1016,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1226,7 +1226,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1236,7 +1236,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1456,7 +1456,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1466,7 +1466,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1675,7 +1675,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -1686,7 +1686,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -2795,7 +2795,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -2805,7 +2805,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3015,7 +3015,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3025,7 +3025,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3238,7 +3238,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3248,7 +3248,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3456,7 +3456,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3466,7 +3466,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3672,7 +3672,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3682,7 +3682,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3893,7 +3893,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -3903,7 +3903,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4119,7 +4119,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4129,7 +4129,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4340,7 +4340,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4350,7 +4350,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4362,7 +4362,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4373,7 +4373,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4384,7 +4384,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4395,7 +4395,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4406,7 +4406,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4417,7 +4417,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4428,7 +4428,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4439,7 +4439,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   },
@@ -4451,7 +4451,7 @@ const LEVEL_ONE = [
     },
     "properties": {
       "stairs": "none",
-      "darkness": false,
+      "darkness": true,
       "spin": false
     }
   }

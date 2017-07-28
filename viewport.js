@@ -17,14 +17,32 @@
  *
  */
 
+/*
+
+Pick a point on a line that starts at the center of the view port
+with a fixed slope. select points off of that.
+
+Walls direcly in front fall on the x=y line; This is 90 deg
+Top of doors fall on +45 * (7 / 8);
+Or, y = x * (7 / 8);
+
+The x compression is [2^(n+2)-3] / (2^n * 8)
+
+First translate n based on squares ahead.
+
+0 squares, the wall in front is 2^2-3 / 2^0*8 = 1 / 8
+1 squares, the wall in front is 2^3-3 / 2^1*8 = 5 / 16
+
+
+The Y value is x...
+For the door top the y value is x * 7 / 8;
+
+*/
+
 // Aspect ratio and dividers
 const DOOR_OFFSET = 1 / 8;
 const MAX_W = 8;
 const MAX_H = 8;
-const THETA = 1.5; // some kind of depth-of-field thing
-// 1.406 fits all depth 5 fov
-// Perspective scalar when rendering walls; filled on in init closure
-const PERSP = [0, 1];
 
 const moveToPct = ($canvas, $context, xpct, ypct) => {
 	$context.moveTo($canvas.width() * xpct, $canvas.height() * ypct);
@@ -64,11 +82,11 @@ const findCoordsOfDepthFromParty = (depth) => {
 };
 
 function perspEqnX(n) {
-	return (Math.pow(2, (n + 2)) - 3) / (Math.pow(2, n) * MAX_W);
+	return 1 * (Math.pow(2, (n + 2)) - 3) / (Math.pow(2, n) * MAX_W);
 }
 
 function perspEqnY(n) {
-	return (Math.pow(2, (n + 2)) - 3) / (Math.pow(2, n) * MAX_H);
+	return 1 * (Math.pow(2, (n + 2)) - 3) / (Math.pow(2, n) * MAX_H);
 }
 
 const drawDoorLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
@@ -78,12 +96,7 @@ const drawDoorLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
 	let px0 = perspEqnX((depth - 1) + u);
 	let px1 = perspEqnX(depth - u);
 
-	// Now, how far DOWN we move of the 1:1 line depends on the X position
-
-	let d0 = 1
-	let d1 = 1;
-
-	let py0 = perspEqnY(depth - 1 + u);
+	let py0 = perspEqnY((depth - 1) + u);
 	let py1 = perspEqnY(depth - u);
 
 	let x1, y1;
@@ -97,14 +110,14 @@ const drawDoorLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
 	w0 = (1 - px0) - (px0);
 	w1 = (1 - px1) - (px1);
 
-	let slide0 = slide * w0;
-	let slide1 = slide * w1;
-
 	h0 = (1 - py0) - (py0);
 	h1 = (1 - py1) - (py1);
 
-	[x1, y1] = [px0 + slide0, py0 + (h0 * u)];
-	[x2, y2] = [px1 + slide1, py1 + (h1 * u)];
+	let slide0 = slide * w0;
+	let slide1 = slide * w1;
+
+	[x1, y1] = [px0 + slide0, py0 + h0 * u];
+	[x2, y2] = [px1 + slide1, py1 + h1 * u];
 	[x3, y3] = [px1 + slide1, py1 + h1];
 	[x4, y4] = [px0 + slide0, py0 + h0];
 
@@ -226,19 +239,10 @@ const drawDoorF = (VP3D, VP3DCTX, slide, depth) => {
 	VP3DCTX.stroke();
 };
 
+var globalDepth = 2;
+
 const draw3dViewPort = () => {
-	// TODO MOVE THIS!
-	// This creates a ZANY inverse FOV that goes beyond the frustum
-	if (PERSP.length < 7) {
-		for (let x = 1; x < 7; ++x) {
-			PERSP.push(PERSP[x] + (THETA / Math.pow(2, x - 1)));
-		}
-	}
-
-
-	let depth = 4;
-
-	let frustum = findCoordsOfDepthFromParty(depth);
+	let frustum = findCoordsOfDepthFromParty(globalDepth);
 	frustum.forEach(a1 => {
 		a1.forEach(a2 => {
 			LevelMap.shadeCell({i: a2[0], j: a2[1]}, 'orange')
@@ -247,8 +251,8 @@ const draw3dViewPort = () => {
 	let VP3D = $('canvas#viewport');
 	let VP3DCTX = VP3D[0].getContext('2d');
 
+	// All viewport lines are draw the same style, so pull this out here
 	VP3DCTX.save();
-	//VP3DCTX.setTransform(PIXEL_RATIO, 0, 0, PIXEL_RATIO, 0, 0);
 	VP3DCTX.fillStyle = "#222";
 	VP3DCTX.fillRect(0, 0, VP3D.width(), VP3D.height());
 	VP3DCTX.strokeStyle = "lightgreen";
@@ -256,17 +260,30 @@ const draw3dViewPort = () => {
 	VP3DCTX.lineWidth = 2;
 
 	let x, y;		// Where in the frustum we're looking
+	let w;          // For clarity, width of current row in frustrum
 	let i, j;		// Grid coordinates of current cell
 	let L, C, R;	// LCR cell references
 	let T;			// Cardinal direction to relative orientation transform
 	let toDraw;
+	
 	T = XLATE_UCS2PARTY[Party.facing];
+
+	// Render backwards so that polygon fill occludes hidden geometry
+
+	C = _getCellReference(Party.loc.i, Party.loc.j);
+	let depth;
+	if (C.properties.darkness === true) {
+		depth = 0;
+	} else {
+		depth = globalDepth;
+	}
+
 	for (y = depth; y >= 0; --y) {
-		for (x = 0; x <= 2 * y + 2; ++x) {
+		let w = 2 * (y + 1);
+		for (x = 0; x <= w; ++x) {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
-			// Render all C.f walls
 			toDraw = C.edge[T.f];
 			if (toDraw === "wall") {
 				drawWallF(VP3D, VP3DCTX, x - (y + 1), y);
@@ -274,30 +291,33 @@ const draw3dViewPort = () => {
 				drawDoorF(VP3D, VP3DCTX, x - (y + 1), y);
 			}
 		}
+
 		// Render R walls to the RIGHT
-		for (x = 2 * y + 2; x >= ((2 * y) + 2) / 2; --x) {
+		for (x = w; x >= w / 2; --x) {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
 			toDraw = C.edge[T.r];
 			if (toDraw === "wall") {
-				drawWallLR(VP3D, VP3DCTX, x - (y + 1), y, false);
+				drawWallLR(VP3D, VP3DCTX, x - (y + 1) + 1, y, true);
 			} else if (toDraw === "door") {
-				drawDoorLR(VP3D, VP3DCTX, x - (y + 1), y, false);
+				drawDoorLR(VP3D, VP3DCTX, x - (y + 1) + 1, y, true);
 			}
 		}
+
 		// Render L walls to the LEFT
-		for (x = 0; x <= ((2 * y) + 2) / 2; ++x) {
+		for (x = 0; x <= w / 2; ++x) {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
 			toDraw = C.edge[T.l];
 			if (toDraw === "wall") {
-				drawWallLR(VP3D, VP3DCTX, x - (y + 1), y, true);
+				drawWallLR(VP3D, VP3DCTX, x - y - 1, y, true);
 			} else if (toDraw === "door") {
-				drawDoorLR(VP3D, VP3DCTX, x - (y + 1), y, true);
+				drawDoorLR(VP3D, VP3DCTX, x - y - 1, y, true);
 			}
 		}
 	}
+	
 	VP3DCTX.restore();
 };

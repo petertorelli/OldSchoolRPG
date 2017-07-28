@@ -1,5 +1,6 @@
 
 
+// Mucking with different levels
 let currentLevel;
 if (0) {
 	currentLevel = level;
@@ -11,15 +12,11 @@ if (0) {
 const grid = {
 	i: 20,
 	j: 20,
-	w: 0,
-	h: 0,
 };
 
 // Return a reference to the (logical) cell's unique object
 const _getCellReference = (i, j, k = 1) => {
-	// TODO make a member function that comprehends dimensions
 	return currentLevel[i + j * (grid.i)];
-	//return level[i + j * 20];
 };
 
 // Translate relative personal orientation to cardinals
@@ -39,6 +36,3 @@ const divMod = (n, d) => {
 const gridWrap = (i, j) => {
     return [divMod(i, grid.i), divMod(j, grid.j)];
 };
-
-
-

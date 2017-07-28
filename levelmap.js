@@ -1,10 +1,13 @@
+/**
+ * Draws the top-down map & handles canvas editing.
+ */
 
-let $ctx;
-let $canvas;
-
-// Mouse cursor
+/**
+ * The user mouse points to a cell and to the nearest edge of the cell.
+ * Edge is a direction, 'n', 's', 'e' or 'w'.
+ */
 const Cursor = {
- 	cell: {
+ 	cellCoords: {
  		i: undefined,
  		j: undefined,
  	},
@@ -28,24 +31,24 @@ const continuityChecks = (currentCell) => {
 	 */
 	let oi, oj, oe;
 	if (currentCell.edge === 'n') {
-		oi = currentCell.cell.i + 0;
-		oj = currentCell.cell.j - 1;
+		oi = currentCell.cellCoords.i + 0;
+		oj = currentCell.cellCoords.j - 1;
 		oe = 's';
 	} else if (currentCell.edge ==='s') {
-		oi = currentCell.cell.i + 0;
-		oj = currentCell.cell.j + 1;
+		oi = currentCell.cellCoords.i + 0;
+		oj = currentCell.cellCoords.j + 1;
 		oe = 'n';
 	} else if (currentCell.edge === 'e') {
-		oi = currentCell.cell.i + 1;
-		oj = currentCell.cell.j + 0;
+		oi = currentCell.cellCoords.i + 1;
+		oj = currentCell.cellCoords.j + 0;
 		oe = 'w';
 	} else { // w
-		oi = currentCell.cell.i - 1;
-		oj = currentCell.cell.j + 0;
+		oi = currentCell.cellCoords.i - 1;
+		oj = currentCell.cellCoords.j + 0;
 		oe = 'e';
 	}
 	[oi, oj] = gridWrap(oi, oj);
-	let cell = _getCellReference(currentCell.cell.i, currentCell.cell.j);
+	let cell = _getCellReference(currentCell.cellCoords.i, currentCell.cellCoords.j);
 	let ocell = _getCellReference(oi, oj);
 	if (cell.edge[currentCell.edge] === undefined) {
 		ocell.edge[oe] = undefined;
@@ -58,9 +61,8 @@ const continuityChecks = (currentCell) => {
 	// #2... There is no check #2
 };
 
-/*
- * For some reason 'this' is returning the root window and not
- * RenderPrimTable object? ...duh... let deliberately acts this way
+/**
+ * Here's a list of generic things to draw...
  */
 const RenderPrimTable = {
 	CONTEXT: undefined,
@@ -158,6 +160,11 @@ const RenderPrimTable = {
 	},
 };
 
+/**
+ * Given a mouse coordiate, determine the absolute screen coordinates on the 
+ * for the nearest edge, and a text character describing what direction wall 
+ * the edge describes (nsew).
+ */
 const computeEdgeVertices = (ulcx, ulcy, mousex, mousey) => {
 	// Determine the wall
 	let x1, y1, x2, y2;
@@ -189,14 +196,19 @@ const computeEdgeVertices = (ulcx, ulcy, mousex, mousey) => {
 	return {x1, y1, x2, y2, wall};
 };
 
+/**
+ * This object draws the tops-down map, but also handles editing as well, but
+ * only if the controller function connects a canvas mouse callback.
+ */
 const LevelMap = {
+	// 'edge' or 'cell' editing
 	editType: undefined,
-	editMode: undefined,
+	// 'edge' or 'wall'
+	editEntity: undefined,
+	userIsEditing: false,
 	init: function (canvas) {
 		this.CANVAS = canvas;
 		this.CONTEXT = this.CANVAS[0].getContext('2d');
-		$ctx = this.CONTEXT;
-		$canvas = canvas;
 		RenderPrimTable.CONTEXT = this.CONTEXT;
 	},
 	translate: function (x, y) {
@@ -229,6 +241,7 @@ const LevelMap = {
 			RenderPrimTable.stairs(ulx, uly, cell.properties.stairs);
 		}
 		if (cell.properties.darkness) {
+			this.shadeCell({i, j}, 'gray');
 		}
 		if (cell.properties.spinner) {
 		}
@@ -243,8 +256,8 @@ const LevelMap = {
 	    }
 	    RenderPrimTable.party(Party.loc);
 	},
-	shadeCell: function (cell, color) {
-		let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
+	shadeCell: function (cellCoords, color) {
+		let [ulcx, ulcy] = [cellCoords.i * grid.w, cellCoords.j * grid.h];
 		this.CONTEXT.save();
 		this.CONTEXT.globalAlpha = 0.25;
 		this.CONTEXT.fillStyle = color;
@@ -260,16 +273,16 @@ const LevelMap = {
 		//mousex += grid.w ;
 		//mousey += grid.h ;
 		// Translate mouse to cell
-		let cell = { 
+		let coords = { 
 			i : (Math.floor(mousex / grid.w) - 1), 
 			j : (Math.floor(mousey / grid.h) - 1)
 		};
-		if (cell.i < 0 || cell.j < 0 || cell.i >= grid.i || cell.j >= grid.j) {
+		if (coords.i < 0 || coords.j < 0 || coords.i >= grid.i || coords.j >= grid.j) {
 			return;
 		}
 		// Determine the upper-left corner x,y coordinates for the cell.
-		this.shadeCell(cell, $('input[name=enable-edit]').prop('checked') ? 'blue' : 'grey');
-		let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
+		this.shadeCell(coords, this.userIsEditing ? 'blue' : 'grey');
+		let [ulcx, ulcy] = [coords.i * grid.w, coords.j * grid.h];
 		let edge = computeEdgeVertices(ulcx, ulcy, mousex, mousey);
 		if (this.editType === 'edge') {
 			this.CONTEXT.save();
@@ -277,19 +290,18 @@ const LevelMap = {
 			this.CONTEXT.moveTo(edge.x1, edge.y1);
 			this.CONTEXT.lineTo(edge.x2, edge.y2);
 			this.CONTEXT.globalAlpha = .7;
-			this.CONTEXT.strokeStyle = $('input[name=enable-edit]').prop('checked') ? 'red' : 'grey';
+			this.CONTEXT.strokeStyle = this.userIsEditing ? 'red' : 'grey';
 			this.CONTEXT.lineWidth = 5;
 			this.CONTEXT.stroke();
 			this.CONTEXT.restore();
 		}
 		// Save current position so we don't have to recalc on click
-		Cursor.cell.i = cell.i;
-		Cursor.cell.j = cell.j;
+		Cursor.cellCoords.i = coords.i;
+		Cursor.cellCoords.j = coords.j;
 		Cursor.edge = edge.wall;
 	},
 	drawGrid: function () {
 	    this.CONTEXT.save();
-	    //this.CONTEXT.setTransform(PIXEL_RATIO, 0, 0, PIXEL_RATIO, 0, 0);
 	    this.CONTEXT.beginPath();
 	    for (let i = 0; i <= grid.i; ++i) {
 	        let [x1, y1] = [i * grid.w, 0]
@@ -310,23 +322,23 @@ const LevelMap = {
 	    this.CONTEXT.restore();
 	},
 	handleCanvasClick: function () {
-		if ($('input[name=enable-edit]').prop('checked') === false) {
+		if (! this.userIsEditing) {
 			return;
 		}
-		let cell = _getCellReference(Cursor.cell.i, Cursor.cell.j);
+		let cell = _getCellReference(Cursor.cellCoords.i, Cursor.cellCoords.j);
 		if (this.editType === 'edge') {
 			// If mode is what is on the edge, remove it
-			if (cell.edge[Cursor.edge] === this.editMode) {
+			if (cell.edge[Cursor.edge] === this.editEntity) {
 				cell.edge[Cursor.edge] = undefined;
 			}
 			// Otherwise add it 
 			else {
-				cell.edge[Cursor.edge] = this.editMode;
+				cell.edge[Cursor.edge] = this.editEntity;
 			}
 			// Continuity check wall & cell edits
 			continuityChecks(Cursor);
 		} else if (this.editType === 'cell') {
-			if (this.editMode === 'stairs') {
+			if (this.editEntity === 'stairs') {
 				if (cell.properties.stairs === 'none') {
 					cell.properties.stairs = 'up';
 				} else if (cell.properties.stairs === 'up') {
@@ -334,8 +346,8 @@ const LevelMap = {
 				} else {
 					cell.properties.stairs = 'none';
 				}
-			} else {
-				cell.properties[this.editMode] = ! cell.properties[this.editMode];
+			} else if (this.editEntity === 'darkness') {
+				cell.properties.darkness = ! cell.properties.darkness;
 			}
 		}
 		continuityChecks(Cursor);
