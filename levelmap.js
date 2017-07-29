@@ -77,6 +77,40 @@ const RenderPrimTable = {
 		this.CONTEXT.stroke();
 		this.CONTEXT.restore();
 	},
+	teleportArrow: function (x1, y1, x2, y2) {
+        let radians = Math.atan((y2 - y1) / (x2 - x1));
+        radians += ((x2 > x1) ? 90 : -90) * Math.PI / 180;
+        this.CONTEXT.save();
+		this.CONTEXT.lineWidth = 2;
+		this.CONTEXT.strokeStyle = 'dodgerblue';
+		this.CONTEXT.fillStyle = 'dodgerblue';
+		this.CONTEXT.globalAlpha = 0.5;
+        this.CONTEXT.beginPath();
+        this.CONTEXT.moveTo(x1, y1);
+        this.CONTEXT.lineTo(x2, y2);
+        this.CONTEXT.stroke();
+        this.CONTEXT.beginPath();
+        this.CONTEXT.translate(x2, y2);
+        this.CONTEXT.rotate(radians);
+        this.CONTEXT.moveTo(0,0);
+        this.CONTEXT.lineTo(5,20);
+        this.CONTEXT.lineTo(-5,20);
+        this.CONTEXT.closePath();
+        this.CONTEXT.fill();
+        this.CONTEXT.restore();
+	},
+	basicX: function (x, y, r) {
+	    this.CONTEXT.save();
+		this.CONTEXT.strokeStyle = 'black';
+		this.CONTEXT.lineWidth = 1;
+	    this.CONTEXT.beginPath();
+	    this.CONTEXT.moveTo(x - r, y - r);
+	    this.CONTEXT.lineTo(x + r, y + r);
+	    this.CONTEXT.moveTo(x - r, y + r);
+	    this.CONTEXT.lineTo(x + r, y - r);
+		this.CONTEXT.stroke();
+	    this.CONTEXT.restore();
+	},
 	basicTriangle: function (x, y, r, rot) {
 	    let cos1 = Math.cos(rot * Math.PI / 180.0);
 	    let sin1 = Math.sin(rot * Math.PI / 180.0);
@@ -126,6 +160,12 @@ const RenderPrimTable = {
 	'edge:hiddendoor': function (x1, y1, x2, y2, edge) {
 		RenderPrimTable.basicDoor(x1, y1, x2, y2, edge, true);
 	},
+	teleportEditStart: function (cellCoords) {
+        let [ox, oy] = [cellCoords.i * grid.w, cellCoords.j * grid.h];
+        ox += grid.w / 2;
+        oy += grid.h / 2;
+        this.basicX(ox, oy, grid.w * .75)		
+	},
 	stairs: function (ulcx, ulcy, type) {
 	    let rot = (type === 'up') ? 270 : 90;
     	let ox = ulcx + grid.w / 2;
@@ -133,8 +173,8 @@ const RenderPrimTable = {
     	let oy = ulcy + grid.h * ((type === 'up') ? 0.57 : 0.43);
     	RenderPrimTable.basicTriangle(ox, oy, grid.h / 4, rot);
 	},
-	party: function (cell) {
-        let [ulcx, ulcy] = [cell.i * grid.w, cell.j * grid.h];
+	party: function (cellCoords) {
+        let [ulcx, ulcy] = [cellCoords.i * grid.w, cellCoords.j * grid.h];
         ulcx += grid.w / 2;
         ulcy += grid.h / 2;
         this.CONTEXT.lineWidth = 1;
@@ -206,6 +246,10 @@ const LevelMap = {
 	// 'edge' or 'wall'
 	editEntity: undefined,
 	userIsEditing: false,
+	// teleport connectors
+	userIsInTwoPart: false,
+	teleportStartPoint: { i: undefined, j: undefined, },
+	teleportStartCell: undefined,
 	init: function (canvas) {
 		this.CANVAS = canvas;
 		this.CONTEXT = this.CANVAS[0].getContext('2d');
@@ -245,6 +289,14 @@ const LevelMap = {
 		}
 		if (cell.properties.spinner) {
 		}
+		if (cell.properties.teleportTo) {
+			RenderPrimTable.teleportArrow(
+				ulx + grid.w / 2,
+				uly + grid.h / 2,
+				cell.properties.teleportTo.i * grid.w + grid.w / 2,
+				cell.properties.teleportTo.j * grid.h + grid.h / 2,
+			);
+		}
 	},
 	draw: function () {
 		this.CONTEXT.clearRect(-grid.w/2, -grid.h/2, this.CANVAS.width(), this.CANVAS.height());
@@ -281,7 +333,7 @@ const LevelMap = {
 			return;
 		}
 		// Determine the upper-left corner x,y coordinates for the cell.
-		this.shadeCell(coords, this.userIsEditing ? 'blue' : 'grey');
+		this.shadeCell(coords, this.userIsEditing ? 'red' : 'grey');
 		let [ulcx, ulcy] = [coords.i * grid.w, coords.j * grid.h];
 		let edge = computeEdgeVertices(ulcx, ulcy, mousex, mousey);
 		if (this.editType === 'edge') {
@@ -294,6 +346,16 @@ const LevelMap = {
 			this.CONTEXT.lineWidth = 5;
 			this.CONTEXT.stroke();
 			this.CONTEXT.restore();
+		}
+		if (this.editEntity === 'teleport') {
+			this.userIsInTwoPart = true;
+			RenderPrimTable.teleportEditStart(coords);
+			if (this.teleportStartPoint.i !== undefined) {
+				let [ox, oy] = [this.teleportStartPoint.i * grid.w + grid.w / 2, 
+								this.teleportStartPoint.j * grid.h + grid.h / 2];
+				let [px, py] = [ulcx + grid.w / 2, ulcy + grid.h / 2];
+				RenderPrimTable.teleportArrow(ox, oy, px, py);
+			}
 		}
 		// Save current position so we don't have to recalc on click
 		Cursor.cellCoords.i = coords.i;
@@ -348,10 +410,47 @@ const LevelMap = {
 				}
 			} else if (this.editEntity === 'darkness') {
 				cell.properties.darkness = ! cell.properties.darkness;
+			} else if (this.editEntity === 'teleport') {
+				if (this.teleportStartPoint.i === undefined) {
+					this.teleportStartPoint.i = Cursor.cellCoords.i;
+					this.teleportStartPoint.j = Cursor.cellCoords.j;
+					this.teleportStartCell = cell;
+					// Erase if there is an arrow here already
+					if (cell.properties.teleportTo !== undefined) {
+						cell.properties.teleportTo = undefined;
+					}
+				} else {
+					// clicked and we have point 1 already
+					if (Cursor.cellCoords.i == this.teleportStartPoint.i &&
+						Cursor.cellCoords.j == this.teleportStartPoint.j) {
+						// same point, do nothing
+					} else {
+						let cellRef = _getCellReference(
+							this.teleportStartPoint.i,
+							this.teleportStartPoint.j,
+						);
+						if (cellRef.properties.teleportTo === undefined) {
+							cellRef.properties.teleportTo = {
+								i: Cursor.cellCoords.i,
+								j: Cursor.cellCoords.j,
+							}
+						}
+					}
+					this.teleportStartPoint.i = undefined;
+					this.teleportStartPoint.j = undefined;
+					this.teleportStartCell = undefined;
+				}
 			}
 		}
 		continuityChecks(Cursor);
 		redraw();
+	},
+	escapeHit: function () {
+		// if the user hits ESC, that disables any two-part editing commands
+		this.userIsInTwoPart = false;
+		this.teleportStartPoint.i = undefined;
+		this.teleportStartPoint.j = undefined;
+		this.teleportStartCell = undefined;
 	},
 };
 

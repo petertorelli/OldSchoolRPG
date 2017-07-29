@@ -21,6 +21,17 @@ const redraw = () => {
     draw3dViewPort();
 };
 
+const eventCheck = () => {
+    // 1. teleports.
+    let cell = _getCellReference(Party.loc.i, Party.loc.j);
+    if (cell.properties.teleportTo !== undefined) {
+        Party.loc.i = cell.properties.teleportTo.i;
+        Party.loc.j = cell.properties.teleportTo.j;
+        redraw();
+        eventCheck();
+    }
+};
+
 $(() => {
     // Initialize the tops-down map
     LevelMap.init($('canvas#draw-grid'));
@@ -61,13 +72,14 @@ $(() => {
         } else if (e.which === 40) { // down
         } else if (e.which === 0x42 || e.which === 0x62) { // b, B
         	Party.bash();
+        } else if (e.which === 27) {
+            LevelMap.escapeHit();
         }
         // Redraw on every party move... par-tay.
         redraw();
-        // check event 
-        //eventCheck();
+        eventCheck();
     });
-
     // Initial draw
     redraw();
+    eventCheck();
 });

@@ -89,8 +89,8 @@ function perspEqnY(n) {
 	return 1 * (Math.pow(2, (n + 2)) - 3) / (Math.pow(2, n) * MAX_H);
 }
 
-const drawDoorLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
-	drawWallLR(VP3D, VP3DCTX, slide, depth, isLeft);
+const drawDoorLR = (VP3D, VP3DCTX, slide, depth) => {
+	drawWallLR(VP3D, VP3DCTX, slide, depth);
 	let u = DOOR_OFFSET;
 	// find px, py for depth of facing wall and one behind it closer to you
 	let px0 = perspEqnX((depth - 1) + u);
@@ -121,13 +121,6 @@ const drawDoorLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
 	[x3, y3] = [px1 + slide1, py1 + h1];
 	[x4, y4] = [px0 + slide0, py0 + h0];
 
-	if (! isLeft) {
-		x1 = 1 - x1;
-		x2 = 1 - x2;
-		x3 = 1 - x3;
-		x4 = 1 - x4;
-	}
-
 	VP3DCTX.beginPath();
 	moveToPct(VP3D, VP3DCTX, x1, y1);
 	lineToPct(VP3D, VP3DCTX, x2, y2);
@@ -139,7 +132,7 @@ const drawDoorLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
 };
 
 
-const drawWallLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
+const drawWallLR = (VP3D, VP3DCTX, slide, depth) => {
 	// find px, py for depth of facing wall and one behind it closer to you
 	let px0 = perspEqnX(depth - 1);
 	let py0 = perspEqnY(depth - 1);
@@ -163,13 +156,6 @@ const drawWallLR = (VP3D, VP3DCTX, slide, depth, isLeft) => {
 	[x2, y2] = [px1 + (slide * w1), py1];
 	[x3, y3] = [px1 + (slide * w1), py1 + h1];
 	[x4, y4] = [px0 + (slide * w0), py0 + h0];
-
-	if (! isLeft) {
-		x1 = 1 - x1;
-		x2 = 1 - x2;
-		x3 = 1 - x3;
-		x4 = 1 - x4;
-	}
 
 	VP3DCTX.beginPath();
 	moveToPct(VP3D, VP3DCTX, x1, y1);
@@ -268,9 +254,11 @@ const draw3dViewPort = () => {
 	
 	T = XLATE_UCS2PARTY[Party.facing];
 
-	// Render backwards so that polygon fill occludes hidden geometry
+	// Render backwards so that polygon fill occludes hidden geometry!!
 
 	C = _getCellReference(Party.loc.i, Party.loc.j);
+
+	// Change the frustrum depth if we are in a dark cell
 	let depth;
 	if (C.properties.darkness === true) {
 		depth = 0;
@@ -280,41 +268,67 @@ const draw3dViewPort = () => {
 
 	for (y = depth; y >= 0; --y) {
 		let w = 2 * (y + 1);
+
+		// Render all front facing walls
 		for (x = 0; x <= w; ++x) {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
 			toDraw = C.edge[T.f];
-			if (toDraw === "wall") {
-				drawWallF(VP3D, VP3DCTX, x - (y + 1), y);
-			} else if (toDraw === "door") {
-				drawDoorF(VP3D, VP3DCTX, x - (y + 1), y);
+			if (C.properties.darkness && y != 0) {
+				VP3DCTX.strokeStyle = "#222";
+				if (toDraw === "wall") {
+					drawWallF(VP3D, VP3DCTX, x - (y + 1), y);
+				}
+			} else {
+				VP3DCTX.strokeStyle = "lightgreen";
+				if (toDraw === "wall") {
+					drawWallF(VP3D, VP3DCTX, x - (y + 1), y);
+				} else if (toDraw === "door") {
+					drawDoorF(VP3D, VP3DCTX, x - (y + 1), y);
+				}
 			}
 		}
 
-		// Render R walls to the RIGHT
+		// Render R walls to the RIGHT of the forward corridor
 		for (x = w; x >= w / 2; --x) {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
 			toDraw = C.edge[T.r];
-			if (toDraw === "wall") {
-				drawWallLR(VP3D, VP3DCTX, x - (y + 1) + 1, y, true);
-			} else if (toDraw === "door") {
-				drawDoorLR(VP3D, VP3DCTX, x - (y + 1) + 1, y, true);
+			if (C.properties.darkness && y != 0) {
+				VP3DCTX.strokeStyle = "#222";
+				if (toDraw === "wall") {
+					drawWallLR(VP3D, VP3DCTX, x - (y + 1) + 1, y);
+				}
+			} else {
+				VP3DCTX.strokeStyle = "lightgreen";
+				if (toDraw === "wall") {
+					drawWallLR(VP3D, VP3DCTX, x - (y + 1) + 1, y);
+				} else if (toDraw === "door") {
+					drawDoorLR(VP3D, VP3DCTX, x - (y + 1) + 1, y);
+				}
 			}
 		}
 
-		// Render L walls to the LEFT
+		// Render L walls to the LEFT of the forward corridor
 		for (x = 0; x <= w / 2; ++x) {
 			i = frustum[y][x][0];
 			j = frustum[y][x][1];
 			C = _getCellReference(i, j);
 			toDraw = C.edge[T.l];
-			if (toDraw === "wall") {
-				drawWallLR(VP3D, VP3DCTX, x - y - 1, y, true);
-			} else if (toDraw === "door") {
-				drawDoorLR(VP3D, VP3DCTX, x - y - 1, y, true);
+			if (C.properties.darkness && y != 0) {
+				VP3DCTX.strokeStyle = "#222";
+				if (toDraw === "wall") {
+					drawWallLR(VP3D, VP3DCTX, x - y - 1, y);
+				}
+			} else {
+				VP3DCTX.strokeStyle = "lightgreen";
+				if (toDraw === "wall") {
+					drawWallLR(VP3D, VP3DCTX, x - y - 1, y);
+				} else if (toDraw === "door") {
+					drawDoorLR(VP3D, VP3DCTX, x - y - 1, y);
+				}
 			}
 		}
 	}

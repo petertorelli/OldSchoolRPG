@@ -1,4 +1,5 @@
-const LEVEL_ONE = [
+const LEVEL_ONE = 
+[
   {
     "edge": {
       "n": "wall",
@@ -2024,7 +2025,7 @@ const LEVEL_ONE = [
       "w": "wall"
     },
     "properties": {
-      "stairs": "none",
+      "stairs": "down",
       "darkness": false,
       "spin": false
     }
@@ -2308,7 +2309,11 @@ const LEVEL_ONE = [
     "properties": {
       "stairs": "none",
       "darkness": false,
-      "spin": false
+      "spin": false,
+      "teleportTo": {
+        "i": 15,
+        "j": 15
+      }
     }
   },
   {
@@ -3504,7 +3509,11 @@ const LEVEL_ONE = [
     "properties": {
       "stairs": "none",
       "darkness": false,
-      "spin": false
+      "spin": false,
+      "teleportTo": {
+        "i": 15,
+        "j": 15
+      }
     }
   },
   {
@@ -4455,4 +4464,5 @@ const LEVEL_ONE = [
       "spin": false
     }
   }
-];
+]
+;
