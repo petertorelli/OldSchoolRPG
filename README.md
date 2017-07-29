@@ -9,4 +9,6 @@ feel free to help out.
 
 Here's a screenshot showing the party, view frustum, darkness, teleporting, doors, secret doors, one way doors, stairs up and down, and a little bitty 3D port all apple-colored...
 
+The map is level 1 of the classic [Wizardry I: Proving Grounds of the Mad Overlord](https://en.wikipedia.org/wiki/Wizardry:_Proving_Grounds_of_the_Mad_Overlord).
+
 ![Screenshot](https://github.com/petertorelli/OldSchoolRPG/blob/master/img/screen.png)
