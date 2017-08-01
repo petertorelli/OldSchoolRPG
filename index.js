@@ -33,6 +33,11 @@ const eventCheck = () => {
 };
 
 $(() => {
+    $('#my-tabs a').click(function (e) {
+      e.preventDefault()
+      $(this).tab('show')
+    });
+
     // Initialize the tops-down map
     LevelMap.init($('canvas#draw-grid'));
 	// set scale values for drawing (make the grid size a little smaller)

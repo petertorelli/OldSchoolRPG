@@ -1,0 +1,36 @@
+.container-fluid
+	.row
+		.col-xs-2
+			.form-group#edit-controls
+				.checkbox
+					input(type='checkbox' name='enable-edit' checked='checked')
+					|  Edit
+				ul#control-list
+					li.radio
+						input(type='radio' data-type='edge' name='draw-entity' value='wall')
+						|  Wall
+					li.radio
+						input(type='radio' data-type='edge' name='draw-entity' value='door')
+						|  Door
+					li.radio
+						input(type='radio' data-type='edge' name='draw-entity' value='hiddendoor')
+						|  Hidden Door
+					li.radio
+						input(type='radio' data-type='edge' name='draw-entity' value='onewaypassage')
+						|  One-way Passage
+					li.radio
+						input(type='radio' data-type='cell' name='draw-entity' value='stairs')
+						|  Stairs
+					li.radio
+						input(type='radio' data-type='cell' name='draw-entity' value='darkness')
+						|  Darkness
+					li.radio
+						input(type='radio' data-type='cell' name='draw-entity' value='spin')
+						|  Spin
+					li.radio
+						input(type='radio' data-type='cell' name='draw-entity' value='teleport')
+						|  Teleport
+		.col-xs-6.text-center
+			canvas#draw-grid(width='500pt' height='500pt')
+		.col-xs-4.text-center
+			canvas#viewport(width='260pt' height='260pt')

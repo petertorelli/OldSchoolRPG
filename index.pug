@@ -1,0 +1,31 @@
+doctype html
+html(lang='en')
+	head
+		meta(charset='utf-8')
+		meta(lang='en')
+		meta(http-equiv='X-UA-Compatible', content='IE=edge')
+		meta(name='viewport', content='width=device-width, initial-scale=1')
+		meta(name='author', content='Peter Torelli')
+		link(rel='stylesheet' href='css/bootstrap.min.css')
+		link(rel='stylesheet' href='style.css')
+		title Ye Olde RPG
+	body(role='document')
+		ul.nav.nav-tabs#my-tabs
+			li(role='presentation').active
+				a(href='#level') Level Design
+			li(role='presentation')
+				a(href='#character') Character Generation
+		.tab-content
+			.tab-pane#level(role='tabpanel').active
+				include level
+			.tab-pane#character(role='tabpanel')
+				include character
+		script(type='text/javascript' src='js/jquery.min.js')
+		script(type='text/javascript' src='js/bootstrap.min.js')
+		script(type='text/javascript' src='level-20x20.js')
+		script(type='text/javascript' src='level-20x20-wiz1-lvl1.js')
+		script(type='text/javascript' src='globals.js')
+		script(type='text/javascript' src='party.js')
+		script(type='text/javascript' src='viewport.js')
+		script(type='text/javascript' src='levelmap.js')
+		script(type='text/javascript' src='index.js')

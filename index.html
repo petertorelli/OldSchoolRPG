@@ -1,48 +1,88 @@
-<html>
-<head>
-<title></title>
-</head>
-<body>
-<div style="">
-	<div style="float: left; border: 1px solid black;">
-		<canvas id='draw-grid' width='500pt' height='500pt'></canvas>
-	</div>
-	<div style="float: left; border: 0px solid black; margin-left: 20px;">
-		<canvas id='viewport' width='260pt' height='260pt'></canvas>
-	</div>
-</div>
-<div style="clear: both;"></div>
-<div>
-	<div>
-		<h3>Editor controls</h3>
-	</div>
-	<div>
-		<input type='checkbox' name='enable-edit' checked='checked' /> Edit
-	</div>
-	<div>
-		<ul style="list-style-type: none" id="control-list">
-			<li><input type='radio' name='draw-entity' data-type='edge' checked='checked' value='wall' /> Wall
-			<li><input type='radio' name='draw-entity' data-type='edge' value='door' /> Door
-			<li><input type='radio' name='draw-entity' data-type='edge' value='hiddendoor' /> Hidden Door
-			<li><input type='radio' name='draw-entity' data-type='cell' value='stairs' /> Stairs
-			<li><input type='radio' name='draw-entity' data-type='cell' value='darkness' /> Darkness
-			<li><input type='radio' name='draw-entity' data-type='cell' value='spin' /> Spin
-			<li><input type='radio' name='draw-entity' data-type='cell' value='teleport' /> Teleport
-			<li><input type='text' value='3' name='view-depth' /> View Depth
-		</ul>
-	</div>
-</div>
-<script type='text/javascript' src='jquery.min.js'></script>
-<script type='text/javascript' src='level-20x20.js'></script>
-<script type='text/javascript' src='level-20x20-wiz1-lvl1.js'></script>
-<script type='text/javascript' src='globals.js'></script>
-<script type='text/javascript' src='party.js'></script>
-<script type='text/javascript' src='viewport.js'></script>
-<script type='text/javascript' src='levelmap.js'></script>
-<script type='text/javascript' src='index.js'></script>
-</body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta lang="en">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Peter Torelli">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Ye Olde RPG</title>
+  </head>
+  <body role="document">
+    <ul class="nav nav-tabs" id="my-tabs">
+      <li class="active" role="presentation"><a href="#level">Level Design</a></li>
+      <li role="presentation"><a href="#character">Character Generation</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="level" role="tabpanel">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-xs-2">
+              <div class="form-group" id="edit-controls">
+                <div class="checkbox">
+                  <input type="checkbox" name="enable-edit" checked="checked"> Edit
+                </div>
+                <ul id="control-list">
+                  <li class="radio">
+                    <input type="radio" data-type="edge" name="draw-entity" value="wall"> Wall
+                  </li>
+                  <li class="radio">
+                    <input type="radio" data-type="edge" name="draw-entity" value="door"> Door
+                  </li>
+                  <li class="radio">
+                    <input type="radio" data-type="edge" name="draw-entity" value="hiddendoor"> Hidden Door
+                  </li>
+                  <li class="radio">
+                    <input type="radio" data-type="edge" name="draw-entity" value="onewaypassage"> One-way Passage
+                  </li>
+                  <li class="radio">
+                    <input type="radio" data-type="cell" name="draw-entity" value="stairs"> Stairs
+                  </li>
+                  <li class="radio">
+                    <input type="radio" data-type="cell" name="draw-entity" value="darkness"> Darkness
+                  </li>
+                  <li class="radio">
+                    <input type="radio" data-type="cell" name="draw-entity" value="spin"> Spin
+                  </li>
+                  <li class="radio">
+                    <input type="radio" data-type="cell" name="draw-entity" value="teleport"> Teleport
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-xs-6 text-center">
+              <canvas id="draw-grid" width="500pt" height="500pt"></canvas>
+            </div>
+            <div class="col-xs-4 text-center">
+              <canvas id="viewport" width="260pt" height="260pt"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="character" role="tabpanel">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-2">
+              <div class="form-group" id="edit-controls">
+                <div class="checkbox">
+                  <input type="checkbox" name="enable-edit" checked="checked"> Edit
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="level-20x20.js"></script>
+    <script type="text/javascript" src="level-20x20-wiz1-lvl1.js"></script>
+    <script type="text/javascript" src="globals.js"></script>
+    <script type="text/javascript" src="party.js"></script>
+    <script type="text/javascript" src="viewport.js"></script>
+    <script type="text/javascript" src="levelmap.js"></script>
+    <script type="text/javascript" src="index.js"></script>
+  </body>
 </html>
-
-<!--
- 
--->
