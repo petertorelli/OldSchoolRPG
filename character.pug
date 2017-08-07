@@ -1,7 +1,51 @@
-.container
-	.row
-		.col-xs-2
-			.form-group#edit-controls
-				.checkbox
-					input(type='checkbox' name='enable-edit' checked='checked')
-					|  Edit
+.form-horizontal#character-editor
+	.form-group
+		label.col-xs-2.control-label Race
+		.col-xs-3
+			select.form-control
+				option#opt-blank 
+				option#opt-human Human
+				option#opt-elf Elf
+				option#opt-dwarf Dwarf
+				option#opt-gnome Gnome
+				option#opt-hobbit Hobbit
+	.form-group
+		label.col-xs-2.control-label Alignment
+		.col-xs-3
+			select.form-control
+				option#opt-blank 
+				option#opt-good Good
+				option#opt-neutral Neutral
+				option#opt-evil Evil
+	.form-group
+		label.col-xs-2.control-label Attributes
+		.col-xs-3
+			.test
+				.row
+					.form-group.col-xs-12
+						.input-group
+							span.input-group-btn
+								button.btn.btn-default &minus;
+							input(type='text' width='10em').form-control
+							span.input-group-btn
+								button.btn.btn-default &plus;
+					.form-group.col-xs-12
+						.input-group
+							span.input-group-btn
+								button.btn.btn-default &minus;
+							input(type='text' width='10em').form-control
+							span.input-group-btn
+								button.btn.btn-default &plus;
+	.form-group
+		label.col-xs-2.control-label Class
+		.col-xs-3
+			select.form-control
+				option#opt-blank 
+				option#opt-fighter Fighter
+				option#opt-mage Mage
+				option#opt-cleric Cleric
+				option#opt-thief Thief
+				option#opt-lord Lord
+				option#opt-wizard Wizard
+				option#opt-samurai Samurai
+				option#opt-ninja Ninja

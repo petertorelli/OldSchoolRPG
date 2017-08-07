@@ -9,3 +9,7 @@
 ul#control-list {
 	list-style-type: none;
 }
+
+#character-editor {
+	margin: 20px;
+}
