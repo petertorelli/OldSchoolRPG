@@ -111,6 +111,19 @@ function init () {
 	let mesh;
 
 
+	let loader = new THREE.TextureLoader();
+
+
+	// we probably need to load the walls as individual components in the scene
+	// so that they can be textured individually.
+	/*
+
+	1. make a wall panel: a square with a texture
+	2. make a door panel: another square with a texture
+	3. add to the scene all of the walls & doors based on the map
+
+	*/
+	
 	// Level
 	geometry = new THREE.BufferGeometry();
 	material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
