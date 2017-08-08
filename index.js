@@ -82,6 +82,7 @@ $(() => {
         }
         // Redraw on every party move... par-tay.
         redraw();
+        render();
         eventCheck();
     });
     // Initial draw
