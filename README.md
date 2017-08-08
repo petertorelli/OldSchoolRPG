@@ -4,8 +4,7 @@ Playing the original Apple //e exposes some of the main design flaws of the UI, 
 it would be fun to hash out the basic game mechanics. Plus, it is a great way to blow off 
 steam when my current job is stressing me out.
 
-First, a level editor. Next, a renderer. Then, dynamic content generation, character tables, etc. Don't know if I'll ever finish, but
-feel free to help out.
+Basic level editor is up and running (except for one-way passages and spinners). Specific trigger events still need implementation. Two renderers, one that tries to draw an Apple //e like viewport from the original, and another in [threejs](https://threejs.org). Character editing is underway... I'm not focusing on non-20x20 grids yet, there are bugs in there.
 
 Here's a screenshot showing the party, view frustum, darkness, teleporting, doors, secret doors, one way doors, stairs up and down, and a little bitty 3D port all apple-colored...
 
