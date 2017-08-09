@@ -1,5 +1,4 @@
 
-
 let $topdown;
 let topdowncamera;
 let topdownrenderer;
@@ -10,10 +9,11 @@ let viewportrenderer;
 
 let scene;
 var mesh, parent_node;
-
 let partyBall;
 let scalar = 100;
-
+let basicWallMesh;
+let basicDoorMesh;
+let levelObject;
 let lookAt = new THREE.Vector3(0, 0, 0);
 
 init();
@@ -24,13 +24,13 @@ function init () {
 	$topdown = $('#webgl-topdown');
 	$viewport = $('#webgl-viewport');
 
-	viewportcamera = new THREE.PerspectiveCamera(100, $topdown.width() / $topdown.height(), 1, 20000);
+	viewportcamera = new THREE.PerspectiveCamera(107, $topdown.width() / $topdown.height(), 1, 20000);
 	viewportcamera.up = new THREE.Vector3(0, 0, 1);
 	viewportcamera.position.set(0.5 * scalar, 0.5 * scalar, 0.5 * scalar);
 	viewportcamera.lookAt(new THREE.Vector3(0.5 * scalar, (1 + 0.5) * scalar, 0.5 * scalar));
 
 	topdowncamera = new THREE.PerspectiveCamera(50, $viewport.width() / $viewport.height(), 1, 20000);
-	topdowncamera.position.set(10 * scalar, 10 * scalar, 3000);
+	topdowncamera.position.set(10 * scalar, 10 * scalar, 5000);
 
 	scene = new THREE.Scene();
 
@@ -101,18 +101,108 @@ function init () {
 			++fakeIndex;
 
 		}
-		console.log(cellIndex);
 	}
 
-	make_full_level();
+	function make_full_level_2 (level) {
+		let x, y;
+		for (let j = 0; j < gy; ++j) {
+			for (let i = 0; i < gx; ++i) {
+				let newWall;
+				let cell = level[j * gx + i];
+				if (cell.edge.w !== undefined) {
+					[x, y] = [i, j]
+					if (cell.edge.w === 'wall') {
+						newWall = basicWallMesh.clone();
+					} else if (cell.edge.w === 'door' || cell.edge.w === 'hiddendoor') {
+						newWall = basicDoorMesh.clone();
+					}
+					y += .5;
+					x += 0.0001;
+					newWall.position.x = x * scalar;	
+					newWall.position.y = (gy - y) * scalar;
+					scene.add(newWall);
+				}
+				if (cell.edge.e !== undefined) {
+					[x, y] = [i, j]
+					if (cell.edge.e === 'wall') {
+						newWall = basicWallMesh.clone();
+					} else if (cell.edge.e === 'door' || cell.edge.e === 'hiddendoor') {
+						newWall = basicDoorMesh.clone();
+					}
+					x += 1;
+					y += .5;
+// need to only render ONE side of cube, so make a 2-tri square not cube!
+// z-sort exposes hidden doors
+					x -= 0.0001;
+					newWall.position.x = x * scalar;	
+					newWall.position.y = (gy - y) * scalar;
+					scene.add(newWall);
+				}
+				if (cell.edge.s !== undefined) {
+					[x, y] = [i, j]
+					if (cell.edge.s === 'wall') {
+						newWall = basicWallMesh.clone();
+					} else if (cell.edge.s === 'door' || cell.edge.s === 'hiddendoor') {
+						newWall = basicDoorMesh.clone();
+					}
+					newWall.rotation.y = -1 * Math.PI / 2;
+					x += .5;
+					y += 1;
+					y -= 0.0001;
+					newWall.position.x = x * scalar;	
+					newWall.position.y = (gy - y) * scalar;
+					scene.add(newWall);
+				}
 
-	let geometry;
-	let material;
-	let mesh;
+				if (cell.edge.n !== undefined) {
+					[x, y] = [i, j]
+					if (cell.edge.n === 'wall') {
+						newWall = basicWallMesh.clone();
+					} else if (cell.edge.n === 'door' || cell.edge.n === 'hiddendoor') {
+						newWall = basicDoorMesh.clone();
+					}
+					newWall.rotation.y = -1 * Math.PI / 2;
+					x += .5;
+					y += 0.0001;
+					newWall.position.x = x * scalar;	
+					newWall.position.y = (gy - y) * scalar;
+					scene.add(newWall);
+				}
+			}
+		}
+	}
 
+	//make_full_level();
+
+	levelObject = new THREE.Object3D();
 
 	let loader = new THREE.TextureLoader();
+	let texture;
 
+	// Make a two-triangle FACE so that backface doesn't render
+	geometry = new THREE.BoxBufferGeometry(0, 1 * scalar, 1 * scalar);
+
+	texture = new THREE.TextureLoader().load('textures/brick.jpg');
+	material = new THREE.MeshBasicMaterial({ map: texture });
+	basicWallMesh = new THREE.Mesh(geometry, material);
+	basicWallMesh.rotation.x = Math.PI / 2 * 45;
+	basicWallMesh.position.z = 0.5 * scalar;
+
+
+	texture = new THREE.TextureLoader().load('textures/brick_nrm.jpg');
+	material = new THREE.MeshBasicMaterial({ map: texture });
+	basicDoorMesh = new THREE.Mesh(geometry, material);
+	basicDoorMesh.rotation.x = Math.PI / 2 * 45;
+	basicDoorMesh.position.z = 0.5 * scalar;
+
+	make_full_level_2(currentLevel);
+
+
+
+//	});
+
+
+// dang .. .CORS .. .need a web server...
 
 	// we probably need to load the walls as individual components in the scene
 	// so that they can be textured individually.
@@ -123,24 +213,24 @@ function init () {
 	3. add to the scene all of the walls & doors based on the map
 
 	*/
-	
+
 	// Level
+/*
 	geometry = new THREE.BufferGeometry();
 	material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
 	geometry.setIndex(indices_array);
 	geometry.addAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 	geometry.addAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 	mesh = new THREE.Mesh(geometry, material);
-	scene.add(mesh);
-
-/*
+	//scene.add(mesh);
 	// Level wire
+/*
 	let wireframe = new THREE.WireframeGeometry(geometry);
 	let line = new THREE.LineSegments(wireframe);
 	line.material.color = new THREE.Color(1,1,1);;
 	line.material.depthTest = true;
 	line.material.opacity = 1;
-	scene.add(line);
+	//	scene.add(line);
 */
 	// Party
 	geometry = new THREE.SphereGeometry( 50, 3, 6 );
@@ -148,7 +238,6 @@ function init () {
 	partyBall = new THREE.Mesh( geometry, material );
 	partyBall.position.set(50, 50, 50);
 	scene.add( partyBall );
-
 
 	topdownrenderer = new THREE.WebGLRenderer({ antialias: true });
 	topdownrenderer.setPixelRatio(window.devicePixelRatio);
@@ -184,7 +273,7 @@ function moveCameraWithParty() {
 }
 
 function animate () {
-	//requestAnimationFrame(animate);
+	requestAnimationFrame(animate);
 	render();
 }
 

@@ -9,6 +9,9 @@ html(lang='en')
 		link(rel='stylesheet' href='css/bootstrap.min.css')
 		link(rel='stylesheet' href='style.css')
 		title Ye Olde RPG
+		script(type='text/javascript' src='js/jquery.min.js')
+		script(type='text/javascript' src='js/bootstrap.min.js')
+		script(type='text/javascript' src='js/three.min.js')
 	body(role='document')
 		ul.nav.nav-tabs#my-tabs
 			li(role='presentation').active
@@ -20,9 +23,6 @@ html(lang='en')
 				include level
 			.tab-pane#character(role='tabpanel')
 				include character
-		script(type='text/javascript' src='js/jquery.min.js')
-		script(type='text/javascript' src='js/bootstrap.min.js')
-		script(type='text/javascript' src='js/three.min.js')
 		script(type='text/javascript' src='level-20x20.js')
 		script(type='text/javascript' src='level-20x20-wiz1-lvl1.js')
 		script(type='text/javascript' src='globals.js')
