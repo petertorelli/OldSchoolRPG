@@ -1,0 +1,19 @@
+{
+  "name": "rpg",
+  "version": "1.0.0",
+  "description": "Needed for textures.",
+  "main": "web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petertorelli/OldSchoolRPG.git"
+  },
+  "author": "peter.j.torelli@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/petertorelli/OldSchoolRPG/issues"
+  },
+  "homepage": "https://github.com/petertorelli/OldSchoolRPG#readme"
+}

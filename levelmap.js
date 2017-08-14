@@ -444,6 +444,9 @@ const LevelMap = {
 		}
 		continuityChecks(Cursor);
 		redraw();
+
+		// Trigger a rebuild of the 3D!
+		viewportWebGlInit();
 	},
 	escapeHit: function () {
 		// if the user hits ESC, that disables any two-part editing commands

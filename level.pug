@@ -2,6 +2,7 @@
 	.row
 		.col-xs-2
 			.form-group#edit-controls
+				p Oops, I broke the editor, it doesn't refresh the geometry
 				.checkbox
 					input(type='checkbox' name='enable-edit' checked='checked')
 					|  Edit
@@ -33,6 +34,5 @@
 		.col-xs-6.text-center
 			canvas#draw-grid(width='500pt' height='500pt')
 		.col-xs-4
-			canvas#viewport(width='256pt' height='256pt')
 			#webgl-topdown(style='height: 256px; width: 256px;')
 			#webgl-viewport(style='height: 256px; width: 256px;')

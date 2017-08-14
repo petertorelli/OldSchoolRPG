@@ -17,8 +17,7 @@ console.log('Device pixel ratio: ' + PIXEL_RATIO);
 // Redraw all the visual thingies...
 const redraw = () => {
     LevelMap.draw();
-    // This should probably be an object too
-    draw3dViewPort();
+    render();
 };
 
 const eventCheck = () => {
@@ -82,7 +81,6 @@ $(() => {
         }
         // Redraw on every party move... par-tay.
         redraw();
-        render();
         eventCheck();
     });
     // Initial draw
