@@ -143,15 +143,16 @@ function viewportWebGlInit () {
 	geometry.computeFaceNormals();
 	geometry.computeVertexNormals();
 	
-	texture = new THREE.TextureLoader().load('textures/brick.jpg');
-	bump = new THREE.TextureLoader().load('textures/brick_spec.jpg');
+//	texture = new THREE.TextureLoader().load('textures/brick.jpg');
+//	bump = new THREE.TextureLoader().load('textures/brick_spec.jpg');
+	texture = new THREE.TextureLoader().load('textures/wall.png');
 	material = new THREE.MeshLambertMaterial({
 		map: texture,
 		//bumpMap: bump,
 	});
 	basicWallMesh = new THREE.Mesh(geometry, material);
 
-	normal = new THREE.TextureLoader().load('textures/door.png');
+	normal = new THREE.TextureLoader().load('textures/door-green-line.png');
 	material = new THREE.MeshLambertMaterial({ map: normal });
 	basicDoorMesh = new THREE.Mesh(geometry, material);
 
