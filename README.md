@@ -10,4 +10,6 @@ Here's a screenshot showing the party, view frustum, darkness, teleporting, door
 
 The map is level 1 of the classic [Wizardry I: Proving Grounds of the Mad Overlord](https://en.wikipedia.org/wiki/Wizardry:_Proving_Grounds_of_the_Mad_Overlord).
 
+I found a Pascal reverse engineer by Thomas William Ewers and I'm doing a port of the game mechanics to JavaScript. Cool.
+
 ![Screenshot](https://github.com/petertorelli/OldSchoolRPG/blob/master/img/screen.png)

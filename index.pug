@@ -14,14 +14,14 @@ html(lang='en')
 		script(type='text/javascript' src='js/three.min.js')
 	body(role='document')
 		ul.nav.nav-tabs#my-tabs
-			li(role='presentation').active
-				a(href='#level') Level Design
 			li(role='presentation')
+				a(href='#level') Level Design
+			li(role='presentation').active
 				a(href='#character') Character Generation
 		.tab-content
-			.tab-pane#level(role='tabpanel').active
+			.tab-pane#level(role='tabpanel')
 				include level
-			.tab-pane#character(role='tabpanel')
+			.tab-pane#character(role='tabpanel').active
 				include character
 		script(type='text/javascript' src='level-20x20.js')
 		script(type='text/javascript' src='level-20x20-wiz1-lvl1.js')
