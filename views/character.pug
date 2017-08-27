@@ -20,26 +20,17 @@
 	.form-group
 		label.col-xs-2.control-label Attributes
 		.col-xs-3
-			.test
-				.row
-					.form-group.col-xs-12
-						.input-group
-							span.input-group-btn
-								button.btn.btn-default &minus;
-							input(type='text' width='10em').form-control
-							span.input-group-btn
-								button.btn.btn-default &plus;
-					.form-group.col-xs-12
-						.input-group
-							span.input-group-btn
-								button.btn.btn-default &minus;
-							input(type='text' width='10em').form-control
-							span.input-group-btn
-								button.btn.btn-default &plus;
+			.form-group
+				.input-group
+					span.input-group-btn
+						button.btn.btn-default &minus;
+					input(type='text').form-control
+					span.input-group-btn
+						button.btn.btn-default &plus;
 	.form-group
 		label.col-xs-2.control-label Class
 		.col-xs-3
-			select.form-control
+			select.form-control(disabled)
 				option#opt-blank 
 				option#opt-fighter Fighter
 				option#opt-mage Mage
