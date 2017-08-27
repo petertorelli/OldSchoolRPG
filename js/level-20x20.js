@@ -1,3 +1,7 @@
+let level_dims = {
+  i: 20, j: 20
+};
+
 let level = [
 	{
 		edge: {

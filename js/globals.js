@@ -1,25 +1,41 @@
 
 
 // Mucking with different levels
-let currentLevel;
+let currentLevel = { cells: undefined, dims: undefined };
 if (0) {
-	currentLevel = level;
+	currentLevel.cells = level;
+	currentLevel.dims = level_dims;
 } else {
-	currentLevel = LEVEL_ONE;
+	currentLevel.cells = LEVEL_ONE;
+	currentLevel.dims = LEVEL_ONE_DIMS;
 }
 
-// Instead of using padding can we just do a translate
-const grid = {
-	i: 20,
-	j: 20,
-};
 
 // Return a reference to the (logical) cell's unique object
 const _getCellReference = (i, j, k = 1) => {
-	return currentLevel[i + j * (grid.i)];
+	if (i < 0 || j < 0) {
+		return undefined;
+	}
+	if (i >= currentLevel.dims.i  || j >= currentLevel.dims.j) {
+		return undefined;
+	}
+	return currentLevel.cells[i + j * (currentLevel.dims.j)];
 };
 
-// Translate relative personal orientation to cardinals
+
+/**
+ * The drawing grid used to represent the editable regions of the level.
+ * [i, j] refer to logical coordinates. [w, h] represent the number of pixels
+ * per grid division on the target 2D rendering surface.
+ */
+const grid = {
+	i: 20,
+	j: 20,
+	w: undefined,
+	h: undefined,
+};
+
+// Translate party front/back/left/right to N/S/E/W
 const XLATE_UCS2PARTY = {
 	n: { f: 'n', b: 's', r: 'e', l: 'w' },
 	s: { f: 's', b: 'n', r: 'w', l: 'e' },

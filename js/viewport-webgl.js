@@ -22,70 +22,77 @@ let partyGaze = new THREE.Vector3(0, 0, 0);
 // # of squares ahead they can see
 let partyVisibility = 3;
 
-// TODO: This needs to be read from the level, and it currently is not there
-let gx = 20;
-let gy = 20;
-
 viewportWebGlInit();
 viewportWebGlAnimate();
 
 // The default square is a north wall at LLC [0,0,0]
-function renderLevelObject (level) {
+function renderLevelObject () {
 	let x, y;
-	for (let j = 0; j < gy; ++j) {
-		for (let i = 0; i < gx; ++i) {
+	for (let j = 0; j < grid.j; ++j) {
+		for (let i = 0; i < grid.i; ++i) {
 			let newObj;
-			let cell = level[j * gx + i];
+			let cell = _getCellReference(i, j);
+			if (cell == undefined) {
+				continue;
+			}
 			if (1 && cell.edge.w !== undefined) {
 				[x, y] = [i, j]
-				if (cell.edge.w === 'wall') {
+				if (cell.edge.w === 'wall' || cell.edge.w === 'hiddendoor') {
 					newObj = basicWallMesh.clone();
-				} else if (cell.edge.w === 'door' || cell.edge.w === 'hiddendoor') {
+				} else if (cell.edge.w === 'door') {
 					newObj = basicDoorMesh.clone();
 				}
-				newObj.rotation.z = 0.5 * Math.PI;
-				y += 1;
-				newObj.position.x = x;	
-				newObj.position.y = (gy - y);
-				scene.add(newObj);
+				if (newObj) {
+					newObj.rotation.z = 0.5 * Math.PI;
+					y += 1;
+					newObj.position.x = x;	
+					newObj.position.y = (currentLevel.dims.j - y);
+					scene.add(newObj);
+				}
 			}
 			if (1 && cell.edge.e !== undefined) {
 				[x, y] = [i, j]
-				if (cell.edge.e === 'wall') {
+				if (cell.edge.e === 'wall' || cell.edge.e === 'hiddendoor') {
 					newObj = basicWallMesh.clone();
-				} else if (cell.edge.e === 'door' || cell.edge.e === 'hiddendoor') {
+				} else if (cell.edge.e === 'door') {
 					newObj = basicDoorMesh.clone();
 				}
-				newObj.rotation.z = -0.5 * Math.PI;
-				x += 1;
-				newObj.position.x = x;	
-				newObj.position.y = (gy - y);
-				scene.add(newObj);
+				if (newObj) {
+					newObj.rotation.z = -0.5 * Math.PI;
+					x += 1;
+					newObj.position.x = x;	
+					newObj.position.y = (currentLevel.dims.j - y);
+					scene.add(newObj);
+				}
 			}
 			if (1 && cell.edge.s !== undefined) {
 				[x, y] = [i, j]
-				if (cell.edge.s === 'wall') {
+				if (cell.edge.s === 'wall' || cell.edge.s === 'hiddendoor') {
 					newObj = basicWallMesh.clone();
-				} else if (cell.edge.s === 'door' || cell.edge.s === 'hiddendoor') {
+				} else if (cell.edge.s === 'door') {
 					newObj = basicDoorMesh.clone();
 				}
-				newObj.rotation.z = Math.PI;
-				x += 1;
-				y += 1;
-				newObj.position.x = x;	
-				newObj.position.y = (gy - y);
-				scene.add(newObj);
+				if (newObj) {
+					newObj.rotation.z = Math.PI;
+					x += 1;
+					y += 1;
+					newObj.position.x = x;	
+					newObj.position.y = (currentLevel.dims.j - y);
+					scene.add(newObj);
+				}
 			}
 			if (1 && cell.edge.n !== undefined) {
 				[x, y] = [i, j]
-				if (cell.edge.n === 'wall') {
+				if (cell.edge.n === 'wall' || cell.edge.n === 'hiddendoor') {
 					newObj = basicWallMesh.clone();
-				} else if (cell.edge.n === 'door' || cell.edge.n === 'hiddendoor') {
+				} else if (cell.edge.n === 'door') {
 					newObj = basicDoorMesh.clone();
 				}
-				newObj.position.x = x;	
-				newObj.position.y = (gy - y);
-				scene.add(newObj);
+				if (newObj) {
+					newObj.position.x = x;	
+					newObj.position.y = (currentLevel.dims.j - y);
+					scene.add(newObj);
+				}
 			}
 			if (cell.properties.darkness) {
 				newObj = darkCube.clone();
@@ -93,7 +100,7 @@ function renderLevelObject (level) {
 				x += 0.5;
 				y += 0.5;
 				newObj.position.x = x;
-				newObj.position.y = (gy - y);
+				newObj.position.y = (currentLevel.dims.j - y);
 				scene.add(newObj);
 			}
 		}
@@ -168,7 +175,7 @@ function viewportWebGlInit () {
 	darkCube.scale.y = -1;
 	darkCube.scale.z = -1;
 
-	renderLevelObject(currentLevel);
+	renderLevelObject();
 
 
 	var ambientLight = new THREE.AmbientLight(0x222222);

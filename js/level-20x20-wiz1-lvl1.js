@@ -1,3 +1,6 @@
+const LEVEL_ONE_DIMS = {
+  i: 20, j: 20
+};
 const LEVEL_ONE = 
 [
   {

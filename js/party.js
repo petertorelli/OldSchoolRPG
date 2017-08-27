@@ -40,6 +40,8 @@ const Party = {
     advance: function () {
     	this.forwardMovement(() => {
 			let cell = _getCellReference(this.loc.i, this.loc.j);
+            if (cell == undefined) 
+                return undefined;
 			return (cell.edge[this.facing] !== undefined);
     	});
     },

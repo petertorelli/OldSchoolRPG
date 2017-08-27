@@ -1,5 +1,6 @@
 /**
- * Draws the top-down map & handles canvas editing.
+ * Draws the top-down map & handles canvas editing. We use an HTML CANVAS
+ * as the 2D surface.
  */
 
 /**
@@ -178,14 +179,13 @@ const RenderPrimTable = {
         ulcx += grid.w / 2;
         ulcy += grid.h / 2;
         this.CONTEXT.lineWidth = 1;
+        let rx = grid.w * .5;
+        let ry = grid.h * .5;
         this.CONTEXT.strokeStyle = 'red';
-        this.CONTEXT.beginPath();
-        this.CONTEXT.arc(ulcx, ulcy, grid.w / 4.0, grid.h / 4.0, 0, 2.0 * Math.PI, false);
-        this.CONTEXT.closePath();
-        this.CONTEXT.strokeStyle = 'red';
-        this.CONTEXT.stroke();
+        this.CONTEXT.strokeRect(ulcx - 0.5 * rx, ulcy - 0.5 * ry, rx, ry);;
         this.CONTEXT.beginPath();
         this.CONTEXT.moveTo(ulcx, ulcy);
+        // "Party-facing" indicator
         if (Party.facing === 'n') {
             this.CONTEXT.lineTo(ulcx, ulcy - grid.h / 4);
         } else if (Party.facing === 's') {
@@ -270,44 +270,7 @@ const LevelMap = {
 		}
 		drawFunc(x1, y1, x2, y2, edge);
 	},
-	drawCell: function (i, j) {
-		// Translate grid coords to logical bounding box (only compute once)
-		let [ulx, uly] = [i * grid.w, j * grid.h];
-		let [lrx, lry] = [ulx + grid.w, uly + grid.h];
-		let cell = _getCellReference(i, j);
-		// Edge drawing is deterministic (no culling optimization here)
-		this.drawEdge(ulx, uly, lrx, uly, 'n', cell.edge.n);
-		this.drawEdge(lrx, uly, lrx, lry, 'e', cell.edge.e);
-		this.drawEdge(ulx, lry, lrx, lry, 's', cell.edge.s);
-		this.drawEdge(ulx, uly, ulx, lry, 'w', cell.edge.w);
-		// Render cell contents
-		if (cell.properties.stairs !== 'none') {
-			RenderPrimTable.stairs(ulx, uly, cell.properties.stairs);
-		}
-		if (cell.properties.darkness) {
-			this.shadeCell({i, j}, 'gray');
-		}
-		if (cell.properties.spinner) {
-		}
-		if (cell.properties.teleportTo) {
-			RenderPrimTable.teleportArrow(
-				ulx + grid.w / 2,
-				uly + grid.h / 2,
-				cell.properties.teleportTo.i * grid.w + grid.w / 2,
-				cell.properties.teleportTo.j * grid.h + grid.h / 2,
-			);
-		}
-	},
-	draw: function () {
-		this.CONTEXT.clearRect(-grid.w/2, -grid.h/2, this.CANVAS.width(), this.CANVAS.height());
-		this.drawGrid();
-	    for (let j = 0; j < 20; ++j) {
-	    	for (let i = 0; i < 20; ++i) {
-	    		this.drawCell(i, j);
-	    	}
-	    }
-	    RenderPrimTable.party(Party.loc);
-	},
+
 	shadeCell: function (cellCoords, color) {
 		let [ulcx, ulcy] = [cellCoords.i * grid.w, cellCoords.j * grid.h];
 		this.CONTEXT.save();
@@ -316,7 +279,8 @@ const LevelMap = {
 		this.CONTEXT.fillRect(ulcx, ulcy, grid.w, grid.h);
 		this.CONTEXT.restore();
 	},
-	/*
+
+	/**
 	 * Draws a cell and closest-edge cursor at the current cell.
 	 */
 	mouseMoveHandler: function (mousex, mousey) {
@@ -362,32 +326,14 @@ const LevelMap = {
 		Cursor.cellCoords.j = coords.j;
 		Cursor.edge = edge.wall;
 	},
-	drawGrid: function () {
-	    this.CONTEXT.save();
-	    this.CONTEXT.beginPath();
-	    for (let i = 0; i <= grid.i; ++i) {
-	        let [x1, y1] = [i * grid.w, 0]
-	        let [x2, y2] = [i * grid.w, grid.h * grid.j];
-	        this.CONTEXT.moveTo(x1, y1);
-	        this.CONTEXT.lineTo(x2, y2);
-	    }
-	    for (let j = 0; j <= grid.j; ++j) {
-	        let [x1, y1] = [0, j * grid.h]
-	        let [x2, y2] = [grid.w * grid.i, j * grid.h];
-	        this.CONTEXT.moveTo(x1, y1);
-	        this.CONTEXT.lineTo(x2, y2);
-	    }
-	    this.CONTEXT.closePath();
-	    this.CONTEXT.strokeStyle = '#dddddd';
-	    this.CONTEXT.lineWidth = 1;
-	    this.CONTEXT.stroke();
-	    this.CONTEXT.restore();
-	},
+
 	handleCanvasClick: function () {
 		if (! this.userIsEditing) {
 			return;
 		}
 		let cell = _getCellReference(Cursor.cellCoords.i, Cursor.cellCoords.j);
+		if (cell == undefined) 
+			return;
 		if (this.editType === 'edge') {
 			// If mode is what is on the edge, remove it
 			if (cell.edge[Cursor.edge] === this.editEntity) {
@@ -454,6 +400,91 @@ const LevelMap = {
 		this.teleportStartPoint.i = undefined;
 		this.teleportStartPoint.j = undefined;
 		this.teleportStartCell = undefined;
+	},
+
+	/**
+	 * Given the [i, j] coordinate of the grid, see if there is a cell for that
+	 * coordinate in the level map, and render it.
+	 */
+	drawCell: function (i, j) {
+		// Translate grid coords to logical bounding box (only compute once)
+		let [ulx, uly] = [i * grid.w, j * grid.h];
+		let [lrx, lry] = [ulx + grid.w, uly + grid.h];
+		let cell = _getCellReference(i, j);
+		if (cell == undefined) {
+			return;
+		}
+		// Edge drawing is deterministic (no culling optimization here)
+		this.drawEdge(ulx, uly, lrx, uly, 'n', cell.edge.n);
+		this.drawEdge(lrx, uly, lrx, lry, 'e', cell.edge.e);
+		this.drawEdge(ulx, lry, lrx, lry, 's', cell.edge.s);
+		this.drawEdge(ulx, uly, ulx, lry, 'w', cell.edge.w);
+		// Render cell contents
+		if (cell.properties.stairs !== 'none') {
+			RenderPrimTable.stairs(ulx, uly, cell.properties.stairs);
+		}
+		if (cell.properties.darkness) {
+			this.shadeCell({i, j}, 'gray');
+		}
+		if (cell.properties.spinner) {
+		}
+		if (cell.properties.teleportTo) {
+			RenderPrimTable.teleportArrow(
+				ulx + grid.w / 2,
+				uly + grid.h / 2,
+				cell.properties.teleportTo.i * grid.w + grid.w / 2,
+				cell.properties.teleportTo.j * grid.h + grid.h / 2,
+			);
+		}
+	},
+
+	/**
+	 * Draws a light-grey grid represengting the editable regions of the level.
+	 */
+	drawGrid: function () {
+	    this.CONTEXT.save();
+	    this.CONTEXT.beginPath();
+	    for (let i = 0; i <= grid.i; ++i) {
+	        let [x1, y1] = [i * grid.w, 0]
+	        let [x2, y2] = [i * grid.w, grid.h * grid.j];
+	        this.CONTEXT.moveTo(x1, y1);
+	        this.CONTEXT.lineTo(x2, y2);
+	    }
+	    for (let j = 0; j <= grid.j; ++j) {
+	        let [x1, y1] = [0, j * grid.h]
+	        let [x2, y2] = [grid.w * grid.i, j * grid.h];
+	        this.CONTEXT.moveTo(x1, y1);
+	        this.CONTEXT.lineTo(x2, y2);
+	    }
+	    this.CONTEXT.closePath();
+	    this.CONTEXT.strokeStyle = '#dddddd';
+	    this.CONTEXT.lineWidth = 1;
+	    this.CONTEXT.stroke();
+	    this.CONTEXT.restore();
+	},
+
+	/**
+	 * The top-level draw function. Draws the level on to the grid cell by cell.
+	 */
+	draw: function () {
+		// 1. Clear
+		this.CONTEXT.clearRect(
+			// TODO: Explain translation here?
+			-0.5 * grid.w,
+			-0.5 * grid.h,
+			this.CANVAS.width(),
+			this.CANVAS.height()
+		);
+		// 2. Grid
+		this.drawGrid();
+		// 3. Level
+	    for (let j = 0; j < grid.j; ++j) {
+	    	for (let i = 0; i < grid.i; ++i) {
+	    		this.drawCell(i, j);
+	    	}
+	    }
+	    // 4. Party
+	    RenderPrimTable.party(Party.loc);
 	},
 };
 
