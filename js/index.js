@@ -1,3 +1,10 @@
+
+/**
+ * The FontStruction “5x7 LED” (https://fontstruct.com/fontstructions/show/901022)
+ * by John Smith is licensed under a Creative Commons Attribution Share Alike
+ * license (http://creativecommons.org/licenses/by-sa/3.0/).
+ */
+
 const PIXEL_RATIO = (function () {
 	let 
 		ctx = document.createElement("canvas").getContext("2d"),
@@ -57,6 +64,7 @@ function initControllers () {
 
 	// Party Movement
 	$('body').keydown((e) => {
+		console.log(e.which);
 		if (e.which === 37) { // left turn
 			Party.turnLeft();
 		} else if (e.which === 38) { // up is forward
@@ -75,6 +83,8 @@ function initControllers () {
 	});
 }
 $(() => {
+	$('.encounters').html('1\n2\n3\n4\n');
+	$('.characters').html('# CHARACTER NAME  CLASS AC HITS STATUS\n1\n2\n3\n4\n5\n6\n');
 	// Initialize the tops-down map
 	LevelMap.init($('canvas#draw-grid'));
 	// -- begin CANVAS tweaks

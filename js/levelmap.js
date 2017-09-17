@@ -15,6 +15,8 @@ const Cursor = {
  	edge: undefined,
 };
 
+// This seems kinda pointless, it would be easier if each cell had no
+// dependencies.
 const continuityChecks = (currentCell) => {
 	// #1 Make opposite cell's wall match current edge!
 	// ------------------------------------------------
@@ -327,6 +329,11 @@ const LevelMap = {
 		Cursor.edge = edge.wall;
 	},
 
+	/**
+	 * Canvas clicks are only used for editing. This code cycles through the
+	 * logical operations of a click based on the editing mode and editing 
+	 * entity.
+	 */
 	handleCanvasClick: function () {
 		if (! this.userIsEditing) {
 			return;

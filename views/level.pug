@@ -32,7 +32,15 @@
 						input(type='radio' data-type='cell' name='draw-entity' value='teleport')
 						|  Teleport
 		.col-xs-6.text-center
-			canvas#draw-grid(width='500pt' height='500pt')
+			.simluated-apple-screen
+				.top-third
+					.box#webgl-topdown(style='height: 256px; width: 256px; padding: 0px; float: left;').bn.bw.be
+					.stack
+						.box.encounters(style='height: 128px;').bn.be
+						.box.options(style='height: 128px;').bn.be
+				.box.messages(style='float: clear; height: 128px;').bw.bn.be
+				.box.characters(style='height: 224px;').bn.bw.be.bs
 		.col-xs-4
-			#webgl-topdown(style='height: 256px; width: 256px;')
-			#webgl-viewport(style='height: 256px; width: 256px;')
+			canvas#draw-grid(width='256px' height='256px')
+			#webgl-viewport(style='height: 256px; width: 256px; display: none;')
+			

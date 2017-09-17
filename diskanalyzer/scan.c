@@ -23,7 +23,7 @@ scan(FILE *fp, char *buf, char dum, int print) {
 
 typedef union intbyte {
 	int i;
-	char b[2];
+	char b[4];
 } intbyte_t;
 
 int
