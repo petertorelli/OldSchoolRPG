@@ -112,7 +112,7 @@ function viewportWebGlInit () {
 	$topdown = $('#webgl-topdown');
 	$viewport = $('#webgl-viewport');
 
-	viewportcamera = new THREE.PerspectiveCamera(120, $topdown.width() / $topdown.height(), .1, 20000);
+	viewportcamera = new THREE.PerspectiveCamera(110, $topdown.width() / $topdown.height(), .1, 20000);
 	viewportcamera.up = new THREE.Vector3(0, 0, 1);
 
 	topdowncamera = new THREE.PerspectiveCamera(50, $viewport.width() / $viewport.height(), 1, 20000);

@@ -65,14 +65,13 @@ function initControllers () {
 	// Party Movement
 	$('body').keydown((e) => {
 		console.log(e.which);
-		if (e.which === 37) { // left turn
+		if (e.which === 37 || e.which === 65) { // left turn
 			Party.turnLeft();
-		} else if (e.which === 38) { // up is forward
+		} else if (e.which === 38 || e.which === 87) { // up is forward
 			Party.advance();
-		} else if (e.which === 39) { // right turn
+		} else if (e.which === 39 || e.which === 68) { // right turn
 			Party.turnRight();
-		} else if (e.which === 40) { // down
-		} else if (e.which === 0x42 || e.which === 0x62) { // b, B
+		} else if (e.which === 75) { // kick (not "bash")
 			Party.bash();
 		} else if (e.which === 27) {
 			LevelMap.escapeHit();
@@ -82,9 +81,49 @@ function initControllers () {
 		eventCheck();
 	});
 }
+
+function drawCastleMarket () {
+	$('.sr[data-idx=0]').html( '  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +');
+	$('.sr[data-idx=1]').html( '  +   C A S T L E                                               M A R K E T   !');
+	$('.sr[data-idx=2]').html( '  + - - - - - - - - - - -   C U R R E N T   P A R T Y :   - - - - - - - - - - +');
+
+	$('.sr[data-idx=4]').html( '    #   C H A R A C T E R   N A M E     C L A S S   A C   H I T S   S T A T U S');
+
+
+
+
+
+
+	$('.sr[data-idx=11]').html('  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +');
+
+	$('.sr[data-idx=13]').html('                            Y O U   M A Y   G O   T O :                        ');
+
+	$('.sr[data-idx=15]').html("  T H E   A ) D V E N T U R E R ' S   I N N ,   G ) I L G A M E S H'           ");
+	$('.sr[data-idx=16]').html("  T A V E R N ,   B ) O L T A C ' S   T R A D I N G   P O S T ,   T H E        ");
+	$('.sr[data-idx=17]').html("  T E M P L E   O F   C ) A N T ,   O R   T H E   E ) D G E   O F   T O W N .  ");
+
+}
+
+
 $(() => {
-	$('.encounters').html('1\n2\n3\n4\n');
-	$('.characters').html('# CHARACTER NAME  CLASS AC HITS STATUS\n1\n2\n3\n4\n5\n6\n');
+
+	$('.sr').each((idx, el) => {
+		$(el).css('top', (idx * 15.8));
+	})
+	drawCastleMarket();
+
+	$('.fakescreen').html('a');
+	$('.ur1').html('F)ORWARD  C)AMP    S)TATUS');
+	$('.ur2').html('L)EFT     Q)UICK   A<-W->D');
+	$('.ur3').html('R)IGHT    T)IME    CLUSTER'); 
+	$('.ur4').html('K)ICK     I)NSPECT');
+	$('.bot1').html('# CHARACTER NAME  CLASS AC HITS STATUS');
+	$('.bot2').html('1');
+	$('.bot3').html('2');
+	$('.bot4').html('3');
+	$('.bot5').html('4');
+	$('.bot6').html('5');
+	$('.bot7').html('6');
 	// Initialize the tops-down map
 	LevelMap.init($('canvas#draw-grid'));
 	// -- begin CANVAS tweaks

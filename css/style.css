@@ -1,7 +1,21 @@
+
+
 @font-face {
-	font-family: "5x7";
-	src: url("fonts/5x7/5x7.ttf");
+	/* foint-family cannot start with a number apparently */
+	font-family: appleFont;
+	src: url("/fonts/PrintChar21.ttf") format('truetype');
+	font-weight: normal;
+	font-style: normal;
 }
+
+@font-face {
+	/* foint-family cannot start with a number apparently */
+	font-family: pr3;
+	src: url("/fonts/PRNumber3.ttf") format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
 
 #edit-controls {
 	margin: 20px;
@@ -16,32 +30,198 @@ ul#control-list {
 }
 
 .box {
-	background: #000;
+	font-family: appleFont;
 	color: lightgreen;
-	font-family: 5x7;
+	font-size: 16px;
 	white-space: pre;
+	position: absolute;
+}
+
+.border {
+	top: 8px;
+	left: 6px;
+	height: 368px;
+	width: 548px;
+	border: 2px solid lightgreen;
+}
+
+/* 84x81 box with an 83x80 field inside */
+.render {
+	width: 168px;
+	height: 162px;
+	top: 8px;
+	left: 6px;
+	border: 2px solid lightgreen;
 	text-align: left;
-	font-size: 22px;
-	padding: 3px;
 }
 
-.bn {
-	border-top: 2px solid lightgreen;
+#webgl-topdown {
+	top: 10px;
+	left: 8px;
+	width: 166px;
+	height: 160px;
 }
 
-.bw {
-	border-left: 2px solid lightgreen;
-}
-
-.bs {
+.ur {
+	top: 10px;
+	height: 80px;
+	left: 174px;
+	width: 378px;
 	border-bottom: 2px solid lightgreen;
 }
 
-.be {
-	border-right: 2px solid lightgreen;
+.ur1 {
+/*	top: 10px;
+*/
+	top: 16px;
+	left: 174px;
+	width: 378px;
+	height: 18px;
+	text-align: left;
+	padding-left: 6px;
 }
 
-.simluated-apple-screen {
-	background: #000;
-	padding: 10px;	
+.ur2 {
+/*	top: 30px;
+*/
+	top: 32px;
+	left: 174px;
+	width: 378px;
+	height: 18px;
+	text-align: left;
+	padding-left: 6px;
 }
+
+.ur3 {
+/*	top: 50px;
+*/
+	top: 48px;
+	left: 174px;
+	width: 378px;
+	height: 18px;
+	text-align: left;
+	padding-left: 6px;
+}
+
+.ur4 {
+/*	top: 70px;
+*/
+	top: 64px;
+	left: 174px;
+	width: 378px;
+	height: 18px;
+	text-align: left;
+	padding-left: 6px;
+}
+
+.mr {
+	top: 90px;
+	height: 80px;
+	left: 174px;
+	width: 378px;
+	border-bottom: 2px solid lightgreen;
+
+}
+
+.center {
+	top: 170px;
+	height: 80px;
+	left: 8px;
+	width: 544px;
+	border-bottom: 2px solid lightgreen;
+}
+
+.bottom {
+	top: 250px;
+	height: 126px;
+	left: 8px;
+	width: 544px;
+	border-bottom: 2px solid lightgreen;
+}
+
+/* Shift the text boxes because div/ttf sizing isn't accurate enough */
+
+.bot1 {
+	top: 254px;
+	left: 8px;
+	width: 378px;
+	height: 16px;
+	text-align: left;
+	padding-left: 4px;
+}
+
+.bot2 {
+/*	top: 268px;
+*/
+	top: 270px;
+	left: 8px;
+	width: 384px;
+	height: 16px;
+	text-align: left;
+	padding-left: 4px;
+}
+
+.bot3 {
+	top: 286px;
+	left: 8px;
+	width: 384px;
+	height: 16px;
+	text-align: left;
+	padding-left: 4px;
+}
+
+.bot4 {
+	top: 302px;
+	left: 8px;
+	width: 384px;
+	height: 16px;
+	text-align: left;
+	padding-left: 4px;
+}
+
+.bot5 {
+	top: 318px;
+	left: 8px;
+	width: 384px;
+	height: 16px;
+	text-align: left;
+	padding-left: 4px;
+}
+
+.bot6 {
+	top: 334px;
+	left: 8px;
+	width: 384px;
+	height: 16px;
+	text-align: left;
+	padding-left: 4px;
+}
+
+.bot7 {
+	top: 350px;
+	left: 8px;
+	width: 384px;
+	height: 16px;
+	text-align: left;
+	padding-left: 4px;
+}
+
+.simulated-apple-screen {
+	background: #000;
+	height: 386px;
+	width: 560px;
+	padding: 10px;
+	margin-top: 10px;
+	position: relative;
+	color: lightgreen;
+}
+
+.sr {
+	left: 2px;
+	font-size:15.9px;
+	font-family: pr3;
+	height: 14px;
+	position: absolute;
+	white-space: pre;
+}
+
